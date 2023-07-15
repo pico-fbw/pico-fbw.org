@@ -50,7 +50,7 @@ const layers = [
     },
     {
         id: 4,
-        name: 'Open Street Map',
+        name: 'OpenStreetMap',
         attribution:
             'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> and contributors',
         link: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -141,6 +141,10 @@ function MapElement() {
         setPolyline(updatedMarkers.map(marker => marker.position));
     };
 
+    const copyJson = () => {
+        navigator.clipboard.writeText(generateMarkersJSON(markers));
+    };
+
     return (
         <div className={'w-full h-full bg-gray-900 relative'}>
             <MapContainer
@@ -168,7 +172,7 @@ function MapElement() {
             </MapContainer>
             <div className="border-white/5 border-b py-2">
                 <div className="flex items-center my-auto h-6">
-                    <div className="flex-auto my-auto flex ml-2">
+                    <div className="flex-auto my-auto flex ml-3">
                         {/*i dont know how to style this */}
                         <input
                             type="range"
@@ -179,17 +183,17 @@ function MapElement() {
                             onChange={event => setDefaultAlt(Number(event.target.value))}
                         />
                         {defaultAlt === -5 ? (
-                            <span className="ml-1 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">
+                            <span className="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">
                                 Hold
                             </span>
                         ) : (
-                            <span className="my-auto text-gray-300 ml-1">{defaultAlt}ft</span>
+                            <span className="my-auto text-gray-300 ml-2">{defaultAlt}ft</span>
                         )}
                     </div>
                     {/* settings dropdown */}
-                    <div className="ml-16 sm:mt-0 flex-none mr-2 my-auto flex">
+                    <div className="ml-16 sm:mt-0 flex-none mr-3 my-auto flex">
                         <PlusIcon
-                            className="text-gray-500 w-6 h-6 mr-1 cursor-pointer hover:text-gray-400 duration-150 transition-all"
+                            className="text-gray-500 w-6 h-6 mr-2 cursor-pointer hover:text-gray-400 duration-150 transition-all"
                             onClick={() => {
                                 if (!map) {
                                     return;
@@ -420,14 +424,6 @@ function MapElement() {
                                             <span className="font-medium text-white">Show JSON</span>
                                         </Switch.Label>
                                     </Switch.Group>
-                                    {showJson && markers.length >= 2 && (
-                                        <button
-                                            type="button"
-                                            className="ml-2 rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
-                                        >
-                                            Copy Json
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                             <div className="mt-8 flow-root">
@@ -438,13 +434,24 @@ function MapElement() {
                                                 Please select at least 2 waypoints
                                             </Alert>
                                         ) : showJson ? (
-                                            <textarea
-                                                name="longitude"
-                                                id="longitude"
-                                                value={generateMarkersJSON(markers)}
-                                                readOnly
-                                                className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                            />
+                                            <>
+                                                <textarea
+                                                    name="longitude"
+                                                    id="longitude"
+                                                    value={generateMarkersJSON(markers)}
+                                                    readOnly
+                                                    className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                                                />
+                                                {showJson && markers.length >= 2 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={copyJson}
+                                                        className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
+                                                    >
+                                                        Copy
+                                                    </button>
+                                                )}
+                                            </>
                                         ) : (
                                             <table className="min-w-full divide-y divide-gray-700">
                                                 <thead>
