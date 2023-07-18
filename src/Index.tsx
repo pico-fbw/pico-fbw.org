@@ -85,6 +85,14 @@ export default function Index() {
                             </NavLink>
                         ))}
                     </div>
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        <a
+                            href="https://github.com/MylesAndMore/pico-fbw/wiki"
+                            className="text-sm font-semibold leading-6 text-white"
+                        >
+                            Get Started <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </div>
                 </nav>
                 <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
                     <div className="fixed inset-0 z-50" />
