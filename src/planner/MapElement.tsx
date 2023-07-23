@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
@@ -62,7 +62,10 @@ function MapElement() {
     const [markers, setMarkers] = useState<{ id: number; position: LatLng; alt: number }[]>([]);
     const [polyline, setPolyline] = useState<LatLng[]>([]);
     const [editID, setEditID] = useState<number | null>(null);
+    const [fplanJson, setFplanJson] = useState(String);
     const [showJson, setShowJson] = useState(false);
+    const [loadingJson, setLoadingJson] = useState(false);
+    const [errorJson, setErrorJson] = useState(false);
     const [map, setMap] = useState<Map | null>(null);
     const [mapLink, setMapLink] = useState(layers[0].link);
     const [mapAttribution, setMapAttribution] = useState(layers[0].attribution);
@@ -141,8 +144,23 @@ function MapElement() {
         setPolyline(updatedMarkers.map(marker => marker.position));
     };
 
+    useEffect(() => {
+        if (showJson) {
+            setLoadingJson(true);
+            generateMarkersJSON(markers).then(returnedString => {
+                if (returnedString === '') {
+                    setErrorJson(true);
+                } else {
+                    setErrorJson(false);
+                    setFplanJson(returnedString);
+                }
+                setLoadingJson(false);
+            });
+        }
+    }, [markers, showJson]);
+
     const copyJson = () => {
-        navigator.clipboard.writeText(generateMarkersJSON(markers));
+        navigator.clipboard.writeText(fplanJson);
     };
 
     return (
@@ -435,21 +453,41 @@ function MapElement() {
                                             </Alert>
                                         ) : showJson ? (
                                             <>
-                                                <textarea
-                                                    name="longitude"
-                                                    id="longitude"
-                                                    value={generateMarkersJSON(markers)}
-                                                    readOnly
-                                                    className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                                />
-                                                {showJson && markers.length >= 2 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={copyJson}
-                                                        className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
-                                                    >
-                                                        Copy
-                                                    </button>
+                                                {loadingJson ? (
+                                                    <div className="relative w-full">
+                                                        <img
+                                                            src="../../loading.gif"
+                                                            alt="Loading..."
+                                                            className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 mx-auto"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        {errorJson ? (
+                                                            <Alert type="danger" className="mx-4 sm:mx-6 lg:mx-0">
+                                                                Error calculating altitudes, please try again later
+                                                            </Alert>
+                                                        ) : (
+                                                            <div className="relative w-full">
+                                                                <textarea
+                                                                    name="longitude"
+                                                                    id="longitude"
+                                                                    value={fplanJson}
+                                                                    readOnly
+                                                                    className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                                                                />
+                                                                {showJson && markers.length >= 2 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={copyJson}
+                                                                        className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
+                                                                    >
+                                                                        Copy
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
                                             </>
                                         ) : (
