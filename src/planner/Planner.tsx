@@ -4,7 +4,7 @@ import PageContentBlock from '../elements/planner/PageContentBlock';
 export default function Planner() {
     return (
         <>
-            <PageContentBlock title={'Wi-Fly Flight Planner'}>
+            <PageContentBlock title={'pico-fbw | Flight Planner'}>
                 <MapElement />
             </PageContentBlock>
         </>

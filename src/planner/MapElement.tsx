@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
@@ -58,8 +58,14 @@ const layers = [
     },
 ];
 
+export interface Marker {
+    id: number;
+    position: LatLng;
+    alt: number;
+}
+
 function MapElement() {
-    const [markers, setMarkers] = useState<{ id: number; position: LatLng; alt: number }[]>([]);
+    const [markers, setMarkers] = useState<Marker[]>([]);
     const [polyline, setPolyline] = useState<LatLng[]>([]);
     const [editID, setEditID] = useState<number | null>(null);
     const [fplanJson, setFplanJson] = useState(String);
@@ -71,6 +77,20 @@ function MapElement() {
     const [mapAttribution, setMapAttribution] = useState(layers[0].attribution);
     const [defaultAlt, setDefaultAlt] = useState(20);
 
+    function updateMarkers(newMarkers: Marker[]) {
+        setLoadingJson(true);
+        generateMarkersJSON(markers, newMarkers).then(returnedString => {
+            if (returnedString !== '') {
+                setErrorJson(false);
+                setFplanJson(returnedString);
+            } else {
+                setErrorJson(true);
+            }
+            setLoadingJson(false);
+        });
+        setMarkers(newMarkers);
+    }
+
     const handleMapClick = (e: LeafletMouseEvent) => {
         const { latlng } = e;
         const newMarker = {
@@ -78,7 +98,7 @@ function MapElement() {
             position: latlng,
             alt: defaultAlt,
         };
-        setMarkers([...markers, newMarker]);
+        updateMarkers([...markers, newMarker]);
         setPolyline([...polyline, latlng]);
     };
 
@@ -98,7 +118,7 @@ function MapElement() {
             }
             return marker;
         });
-        setMarkers(updatedMarkers);
+        updateMarkers(updatedMarkers);
 
         setPolyline(updatedMarkers.map(marker => marker.position));
     };
@@ -109,7 +129,7 @@ function MapElement() {
             ...marker,
             id: index + 1,
         }));
-        setMarkers(shiftedMarkers);
+        updateMarkers(shiftedMarkers);
         setPolyline(shiftedMarkers.map(marker => marker.position));
         setEditID(null);
     };
@@ -124,8 +144,18 @@ function MapElement() {
 
     const getPositionById = (id: number): { position: LatLng; alt: number } => {
         const marker = markers.find(marker => marker.id === id);
+
+        let latitude = 0,
+            longitude = 0,
+            altitude = 0;
+        if (marker) {
+            altitude = Math.min(Math.max(marker.alt, -5), 400);
+            latitude = Math.min(Math.max(marker.position.lat, -90), 90);
+            longitude = Math.min(Math.max(marker.position.lng, -180), 180);
+        }
+
         return marker
-            ? { position: marker.position, alt: marker.alt }
+            ? { position: { lat: latitude, lng: longitude } as LatLng, alt: altitude }
             : { position: { lat: 0, lng: 0 } as LatLng, alt: 0 };
     };
 
@@ -140,24 +170,9 @@ function MapElement() {
             }
             return marker;
         });
-        setMarkers(updatedMarkers);
+        updateMarkers(updatedMarkers);
         setPolyline(updatedMarkers.map(marker => marker.position));
     };
-
-    useEffect(() => {
-        if (showJson) {
-            setLoadingJson(true);
-            generateMarkersJSON(markers).then(returnedString => {
-                if (returnedString === '') {
-                    setErrorJson(true);
-                } else {
-                    setErrorJson(false);
-                    setFplanJson(returnedString);
-                }
-                setLoadingJson(false);
-            });
-        }
-    }, [markers, showJson]);
 
     const copyJson = () => {
         navigator.clipboard.writeText(fplanJson);
@@ -191,38 +206,45 @@ function MapElement() {
             <div className="border-white/5 border-b py-2">
                 <div className="flex items-center my-auto h-6">
                     <div className="flex-auto my-auto flex ml-3">
-                        {/*i dont know how to style this */}
+                        <label htmlFor="alt" className="text-gray-300 mr-3 md:hidden">
+                            Alt:
+                        </label>
+                        <label htmlFor="alt" className="text-gray-300 mr-3 hidden md:block">
+                            Altitude:
+                        </label>
+                        {/* Styling is still bad on this slider because...sliders are just awful to style (please fix this Tailwind/CSS in general) but it looks okay for now */}
                         <input
                             type="range"
+                            name="alt"
                             min={-5}
                             max={400}
                             step={5}
+                            className="h-6 rounded-full appearance-none bg-blue-400/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                             value={defaultAlt}
                             onChange={event => setDefaultAlt(Number(event.target.value))}
                         />
                         {defaultAlt === -5 ? (
-                            <span className="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">
+                            <span className="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30 transition-all">
                                 Hold
                             </span>
                         ) : (
-                            <span className="my-auto text-gray-300 ml-2">{defaultAlt}ft</span>
+                            <span className="my-auto text-gray-300 ml-3 transition-all">{defaultAlt}ft</span>
                         )}
                     </div>
                     {/* settings dropdown */}
-                    <div className="ml-16 sm:mt-0 flex-none mr-3 my-auto flex">
+                    <div className="ml-5 sm:mt-0 flex-none mr-3 my-auto flex">
                         <PlusIcon
                             className="text-gray-500 w-6 h-6 mr-2 cursor-pointer hover:text-gray-400 duration-150 transition-all"
                             onClick={() => {
                                 if (!map) {
                                     return;
                                 }
-                                console.log(map.getCenter());
                                 const newMarker = {
                                     id: markers.length + 1,
                                     position: map.getCenter(),
                                     alt: defaultAlt,
                                 };
-                                setMarkers([...markers, newMarker]);
+                                updateMarkers([...markers, newMarker]);
                                 setPolyline([...polyline, map.getCenter()]);
                                 setEditID(markers.length + 1);
                             }}
@@ -295,7 +317,7 @@ function MapElement() {
                     </div>
                 </div>
             </div>
-            {/* edit paypoint dock */}
+            {/* edit waypoint dock */}
             <Transition
                 show={!!editID}
                 enter="transition-opacity duration-250"
@@ -322,11 +344,14 @@ function MapElement() {
                                     <div className="mt-2">
                                         <input
                                             type="text"
+                                            name="latitude"
+                                            id="latitude"
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                             value={getPositionById(editID ? editID : -1).position.lat}
                                             onChange={e => {
-                                                const newLat = Number(e.target.value);
+                                                let newLat = Number(e.target.value);
                                                 if (!isNaN(newLat)) {
+                                                    newLat = Math.min(Math.max(parseInt(e.target.value), -90), 90);
                                                     setMarkerPosition(
                                                         editID ? editID : -1,
                                                         newLat,
@@ -335,8 +360,6 @@ function MapElement() {
                                                     );
                                                 }
                                             }}
-                                            name="latitude"
-                                            id="latitude"
                                         />
                                     </div>
                                 </div>
@@ -356,8 +379,9 @@ function MapElement() {
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                             value={getPositionById(editID ? editID : -1).position.lng}
                                             onChange={e => {
-                                                const newLng = Number(e.target.value);
+                                                let newLng = Number(e.target.value);
                                                 if (!isNaN(newLng)) {
+                                                    newLng = Math.min(Math.max(parseInt(e.target.value), -180), 180);
                                                     setMarkerPosition(
                                                         editID ? editID : -1,
                                                         getPositionById(editID ? editID : -1).position.lat,
@@ -378,14 +402,17 @@ function MapElement() {
                                     </label>
                                     <div className="mt-2">
                                         <input
-                                            type="text"
+                                            type="number"
+                                            min={-5}
+                                            max={400}
                                             name="altitude"
                                             id="altitude"
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                             value={getPositionById(editID ? editID : -1).alt}
                                             onChange={e => {
-                                                const newAlt = Number(e.target.value);
+                                                let newAlt = Number(e.target.value);
                                                 if (!isNaN(newAlt)) {
+                                                    newAlt = Math.min(Math.max(parseInt(e.target.value), -5), 400);
                                                     setMarkerPosition(
                                                         editID ? editID : -1,
                                                         getPositionById(editID ? editID : -1).position.lat,

@@ -1,6 +1,8 @@
-import { LatLng } from 'leaflet';
+import { Marker } from '../planner/MapElement';
 
 const url = 'https://alt.pico-fbw.org';
+
+const cachedAltitudes: number[] = [];
 
 async function toMSL(locations: number[][]): Promise<number[]> {
     const response = await fetch(url, {
@@ -23,17 +25,44 @@ async function toMSL(locations: number[][]): Promise<number[]> {
     return data;
 }
 
-export default async (markers: { id: number; position: LatLng; alt: number }[]): Promise<string> => {
+export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> => {
     try {
-        const locations = markers.map(marker => [marker.position.lat, marker.position.lng]);
-        const altitudes = await toMSL(locations);
+        const toFetch = markers.filter(
+            // Only fetch markers that have a valid altitude and have either changed position or never have had their alt fetched
+            marker => {
+                if (marker.alt > 400) {
+                    throw new Error('Altitude too high'); // Should be handled earlier so this is an immediate error
+                }
 
-        const waypoints = markers.map((marker, i) => {
-            const alt = marker.alt + altitudes[i] * 3.28084; // MSL alt = AGL + point MSL (converted from meters to feet)
+                const oldMarker = oldMarkers.find(oldMarker => oldMarker.id === marker.id);
+                if (!oldMarker) {
+                    return true;
+                }
+
+                return (
+                    marker.alt > 0 &&
+                    (marker.position.lat !== oldMarker.position.lat ||
+                        marker.position.lng !== oldMarker.position.lng ||
+                        !cachedAltitudes[marker.id])
+                );
+            },
+        );
+        if (toFetch.length > 0) {
+            const altitudes = await toMSL(toFetch.map(marker => [marker.position.lat, marker.position.lng]));
+            altitudes.forEach((alt, i) => {
+                const marker = markers.find(marker => marker === toFetch[i]);
+                if (marker) {
+                    cachedAltitudes[marker.id] = alt * 3.28084; // Conversion from meters to feet
+                }
+            });
+        }
+
+        const waypoints = markers.map(marker => {
             return {
                 lat: marker.position.lat,
                 lng: marker.position.lng,
-                alt: alt,
+                // Preserve hold, otherwise final alt (MSL) = AGL + calculated MSL at point
+                alt: marker.alt > 0 ? cachedAltitudes[marker.id] + marker.alt : marker.alt,
             };
         });
 
@@ -45,6 +74,7 @@ export default async (markers: { id: number; position: LatLng; alt: number }[]):
 
         return json;
     } catch (error) {
+        console.error(`Failed to generate JSON with error: ${error}`);
         return '';
     }
 };
