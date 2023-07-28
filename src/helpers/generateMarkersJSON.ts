@@ -40,7 +40,7 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
                 }
 
                 return (
-                    marker.alt > 0 &&
+                    marker.alt >= 0 &&
                     (marker.position.lat !== oldMarker.position.lat ||
                         marker.position.lng !== oldMarker.position.lng ||
                         !cachedAltitudes[marker.id])
@@ -62,7 +62,7 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
                 lat: marker.position.lat,
                 lng: marker.position.lng,
                 // Preserve hold, otherwise final alt (MSL) = AGL + calculated MSL at point
-                alt: marker.alt > 0 ? cachedAltitudes[marker.id] + marker.alt : marker.alt,
+                alt: marker.alt >= 0 ? cachedAltitudes[marker.id] + marker.alt : marker.alt,
             };
         });
 

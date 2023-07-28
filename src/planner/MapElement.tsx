@@ -475,7 +475,7 @@ function MapElement() {
                                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                                         {markers.length < 2 ? (
-                                            <Alert type="danger" className="mx-4 sm:mx-6 lg:mx-0">
+                                            <Alert type="info" className="mx-4 sm:mx-6 lg:mx-0">
                                                 Please select at least 2 waypoints
                                             </Alert>
                                         ) : showJson ? (
@@ -543,13 +543,15 @@ function MapElement() {
                                                             scope="col"
                                                             className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                                                         >
-                                                            Distance
+                                                            <div className="hidden md:block">Distance</div>
+                                                            <div className="md:hidden">Dist.</div>
                                                         </th>
                                                         <th
                                                             scope="col"
                                                             className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                                                         >
-                                                            Altitude
+                                                            <div className="hidden md:block">Altitude</div>
+                                                            <div className="md:hidden">Alt.</div>
                                                         </th>
                                                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
                                                             <span className="sr-only">Edit</span>
@@ -565,10 +567,20 @@ function MapElement() {
                                                                         {marker.id}
                                                                     </td>
                                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                        {marker.position.lat}
+                                                                        <div className="hidden md:block">
+                                                                            {marker.position.lat}
+                                                                        </div>
+                                                                        <div className="md:hidden">
+                                                                            {`${marker.position.lat.toFixed(4)}...`}
+                                                                        </div>
                                                                     </td>
                                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                        {marker.position.lng}
+                                                                        <div className="hidden md:block">
+                                                                            {marker.position.lng}
+                                                                        </div>
+                                                                        <div className="md:hidden">
+                                                                            {`${marker.position.lng.toFixed(4)}...`}
+                                                                        </div>
                                                                     </td>
                                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300"></td>
                                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
@@ -577,7 +589,7 @@ function MapElement() {
                                                                                 Hold
                                                                             </span>
                                                                         ) : (
-                                                                            <>{marker.alt} feet</>
+                                                                            <>{marker.alt}ft</>
                                                                         )}
                                                                     </td>
                                                                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
@@ -611,10 +623,20 @@ function MapElement() {
                                                                     {marker.id}
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                    {marker.position.lat}
+                                                                    <div className="hidden md:block">
+                                                                        {marker.position.lat}
+                                                                    </div>
+                                                                    <div className="md:hidden">
+                                                                        {`${marker.position.lat.toFixed(4)}...`}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                    {marker.position.lng}
+                                                                    <div className="hidden md:block">
+                                                                        {marker.position.lng}
+                                                                    </div>
+                                                                    <div className="md:hidden">
+                                                                        {`${marker.position.lng.toFixed(4)}...`}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                                     {distanceToPrevious}
@@ -625,7 +647,7 @@ function MapElement() {
                                                                             Hold
                                                                         </span>
                                                                     ) : (
-                                                                        <>{marker.alt} feet</>
+                                                                        <>{marker.alt}ft</>
                                                                     )}
                                                                 </td>
                                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">

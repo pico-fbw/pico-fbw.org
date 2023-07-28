@@ -14,10 +14,10 @@ export default (lat1: number, lon1: number, lat2: number, lon2: number): string 
 
     if (distance >= 1000) {
         const nauticalMiles = (distance / 1852).toFixed(2); // Conversion: 1 nautical mile = 1852 meters
-        result = `${nauticalMiles} nautical miles`;
+        result = `${nauticalMiles}nm`;
     } else {
         const roundedDistance = Math.round(distance * 10) / 10; // Round to the nearest tenth
-        result = `${roundedDistance} meters`;
+        result = `${roundedDistance}m`;
     }
 
     return result;
