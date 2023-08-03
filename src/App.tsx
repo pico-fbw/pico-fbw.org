@@ -5,10 +5,12 @@ import Settings from './planner/Settings';
 
 function NoMatch() {
     return (
-        <div>
-            <h2>Nothing to see here!</h2>
+        <div className="flex flex-col items-center justify-center h-screen">
+            <h2 className="text-3xl font-bold mb-4 text-sky-500">Nothing to see here!</h2>
             <p>
-                <Link to="/">Go to the home page</Link>
+                <Link to="/" className="text-blue-500 hover:text-blue-700">
+                    Go to the home page
+                </Link>
             </p>
         </div>
     );

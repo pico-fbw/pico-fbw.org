@@ -492,7 +492,7 @@ function MapElement() {
                                                     <>
                                                         {errorJson ? (
                                                             <Alert type="danger" className="mx-4 sm:mx-6 lg:mx-0">
-                                                                Error calculating altitudes, please try again later
+                                                                Error generating JSON, please try again later
                                                             </Alert>
                                                         ) : (
                                                             <div className="relative w-full">
