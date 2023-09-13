@@ -219,7 +219,7 @@ function MapElement() {
                             min={-5}
                             max={400}
                             step={5}
-                            className="h-6 rounded-full appearance-none bg-blue-400/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                            className="h-6 rounded-full appearance-none bg-white/5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all px-1"
                             value={defaultAlt}
                             onChange={event => setDefaultAlt(Number(event.target.value))}
                         />

@@ -18,7 +18,7 @@ function getColors(type: AlertProps['type']) {
         case 'danger':
             return 'bg-red-400/10 text-red-400';
         case 'info':
-            return 'bg-gray-400/10 text-gray-400';
+            return 'bg-blue-400/10 text-blue-500';
     }
 }
 

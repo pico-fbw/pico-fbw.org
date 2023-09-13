@@ -17,7 +17,7 @@ export default function Settings() {
                         </h2>
                         <div className="sm:col-span-3 space-y-6">
                             <h3 className="text-xl font-bold leading-6 text-sky-500">GPS Number of Offset Samples</h3>
-                            <p className="text-sm font-medium text-gray-500 w-auto">
+                            <p className="text-sm font-medium text-gray-200 w-auto">
                                 The amount of samples the system will take on GPS initialization to calculate the
                                 current altitude. Keep in mind that most GPS modules provide updates once per second, so
                                 high values may take a while to complete. Valid values range from 0 to 100.
@@ -30,7 +30,7 @@ export default function Settings() {
                                     type="number"
                                     id="setting0"
                                     name="setting0"
-                                    className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-auto pl-3 pr-2 py-1.5 shadow-sm sm:text-sm sm:leading-6 border-gray-300 rounded-md"
+                                    className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                     value={gpsNumOffsetSamples}
                                     onChange={e => {
                                         let setting = Number(e.target.value);
