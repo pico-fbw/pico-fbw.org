@@ -1,14 +1,16 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import Index from './Index';
+import Onboarding from './wiki/Onboarding';
 import Planner from './planner/Planner';
 import Settings from './planner/Settings';
+import Wiki from './wiki/Wiki';
 
 function NoMatch() {
     return (
         <div className="flex flex-col items-center justify-center h-screen">
-            <h2 className="text-3xl font-bold mb-4 text-sky-500">Nothing to see here!</h2>
+            <h2 className="text-3xl font-bold mb-4 text-pink-600">Nothing to see here!</h2>
             <p>
-                <Link to="/" className="text-blue-500 hover:text-blue-700">
+                <Link to="/" className="text-blue-600 hover:text-sky-500">
                     Go to the home page
                 </Link>
             </p>
@@ -26,6 +28,11 @@ export default function App() {
             <Route path="/planner">
                 <Route index element={<Planner />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="*" element={<NoMatch />} />
+            </Route>
+            <Route path="/wiki">
+                <Route index element={<Wiki />} />
+                <Route path="onboarding" element={<Onboarding />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
         </Routes>
