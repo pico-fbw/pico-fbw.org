@@ -1,13 +1,14 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { HomeIcon, FolderIcon, Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, DocumentTextIcon, GlobeAmericasIcon, Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
 import { Bars3Icon } from '@heroicons/react/20/solid';
 
 const navigation = [
     { name: 'Home', to: '/', icon: HomeIcon, end: true },
-    { name: 'Flight Plans', to: '/planner', icon: FolderIcon, end: true },
-    { name: 'Settings', to: '/planner/settings', icon: Cog6ToothIcon, end: false },
+    { name: 'Planner', to: '/tools/planner', icon: GlobeAmericasIcon, end: true },
+    { name: 'Planner Settings', to: '/tools/planner/settings', icon: Cog6ToothIcon, end: false },
+    { name: 'Config Editor', to: '/tools/config', icon: DocumentTextIcon, end: true },
 ];
 
 function classNames(...classes: string[]) {

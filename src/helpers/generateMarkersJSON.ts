@@ -1,7 +1,7 @@
-import { Marker } from '../planner/MapElement';
+import { Marker } from '../tools/MapElement';
 import settings from '../helpers/settings';
 
-const url = 'https://alt.pico-fbw.org';
+const url = 'http://193.243.190.83/'; // DNS lookup is currently broken for some reason
 
 const cachedAltitudes: number[] = [];
 

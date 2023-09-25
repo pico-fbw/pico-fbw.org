@@ -1,9 +1,10 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { Link, Routes, Route } from 'react-router-dom';
 import Index from './Index';
-import Onboarding from './wiki/Onboarding';
-import Planner from './planner/Planner';
-import Settings from './planner/Settings';
+import Planner from './tools/Planner';
+import Settings from './tools/Settings';
+import Config from './tools/Config';
 import Wiki from './wiki/Wiki';
+import Onboarding from './wiki/Onboarding';
 
 function NoMatch() {
     return (
@@ -25,9 +26,13 @@ export default function App() {
                 <Route index element={<Index />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
-            <Route path="/planner">
-                <Route index element={<Planner />} />
-                <Route path="settings" element={<Settings />} />
+            <Route path="/tools">
+                <Route path="planner">
+                    <Route index element={<Planner />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="*" element={<NoMatch />} />
+                </Route>
+                <Route path="config" element={<Config />}></Route>
                 <Route path="*" element={<NoMatch />} />
             </Route>
             <Route path="/wiki">

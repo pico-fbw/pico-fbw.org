@@ -6,9 +6,9 @@ import { NavLink } from 'react-router-dom';
 function Navigation({ showNavbar = true }) {
     const navigation = [
         { name: 'Home', to: '/' },
-        { name: 'Flight Planner', to: '/planner' },
-        { name: 'Shop', to: 'https://shop.pico-fbw.com' },
+        { name: 'Flight Planner', to: '/tools/planner' },
         { name: 'Wiki', to: '/wiki' },
+        { name: 'Shop', to: 'https://shop.pico-fbw.com' },
     ];
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

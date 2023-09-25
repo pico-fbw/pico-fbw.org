@@ -16,15 +16,19 @@ export default function Settings() {
                             Settings
                         </h2>
                         <div className="sm:col-span-3 space-y-6">
-                            <h3 className="text-xl font-bold leading-6 text-sky-500">GPS Number of Offset Samples</h3>
+                            <h3 className="text-xl font-bold leading-6 text-sky-500">GPS Offset Samples</h3>
                             <p className="text-sm font-medium text-gray-200 w-auto">
-                                The amount of samples the system will take on GPS initialization to calculate the
-                                current altitude. Keep in mind that most GPS modules provide updates once per second, so
-                                high values may take a while to complete. Valid values range from 0 to 100.
+                                Choose how the autopilot system determines altitude:
                                 <br /> <br />
-                                If zero, altitudes will be calculated before being sent to the system, but these are not
-                                always accurate enough.
+                                <b>- 0 (Default):</b> Altitude is pre-calculated based on a database (accuracy within
+                                100 feet, more applicable for hilly areas or high flying).
+                                <br />
+                                <b>- 1-100:</b> Use GPS altitude as an offset for more precise altitude control during
+                                flight (more applicable for flatter areas and lower flying).
+                                <br /> <br />
+                                Note that Higher values may require additional time on GPS initialization.
                             </p>
+
                             <div>
                                 <input
                                     type="number"
