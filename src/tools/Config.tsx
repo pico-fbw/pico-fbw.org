@@ -5,50 +5,50 @@ import SerialManager from '../helpers/serialManager';
 
 // TODO: setting for first-time onboarding to config editor with guided setup
 
-const port = new SerialManager();
-
 export default function Config() {
+    const [port, setPort] = useState<SerialManager | null>(null);
     const [serialStatus, setSerialStatus] = useState('closed');
 
     function serialSupported() {
         return 'serial' in navigator;
     }
 
-    function attemptSerialConnection(serial: SerialManager) {
-        serial
-            .open()
-            .then(() => {
-                serial
-                    .ping()
-                    .then(result => {
-                        if (result) {
-                            setSerialStatus('open');
-                            serial.sendCommand('GET_INFO').then(result => {
-                                console.log(result);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        setSerialStatus(error.toString());
-                    });
-            })
-            .catch(error => {
-                setSerialStatus(error.toString());
-            });
+    function attemptSerialConnection(serial: SerialManager | null) {
+        if (serial) {
+            serial
+                .open()
+                .then(() => {
+                    serial
+                        .ping()
+                        .then(result => {
+                            if (result) {
+                                setSerialStatus('open');
+                            }
+                        })
+                        .catch(error => {
+                            setSerialStatus(error.toString());
+                        });
+                })
+                .catch(error => {
+                    setSerialStatus(error.toString());
+                });
+        }
     }
 
     useEffect(() => {
         if (serialSupported()) {
-            attemptSerialConnection(port);
-            port.addEventListener('connect', () => {
+            const manager = new SerialManager();
+            setPort(manager);
+            attemptSerialConnection(manager);
+            manager.addEventListener('connect', () => {
                 setSerialStatus('closed');
             });
-            port.addEventListener('disconnect', () => {
+            manager.addEventListener('disconnect', () => {
                 setSerialStatus('closed');
             });
             return () => {
-                port.close();
-                port.removeEventListener('disconnect', () => {
+                manager.close();
+                manager.removeEventListener('disconnect', () => {
                     setSerialStatus('closed');
                 });
             };
@@ -68,7 +68,7 @@ export default function Config() {
                                 <>
                                     {serialStatus === 'open' ? (
                                         <div>
-                                            <Alert type="info">Serial open</Alert>
+                                            <Alert type="info">Connected.</Alert>
                                             {/* TODO */}
                                         </div>
                                     ) : serialStatus === 'closed' ? (
