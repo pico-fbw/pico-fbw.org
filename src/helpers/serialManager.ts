@@ -1,12 +1,9 @@
 export default class SerialManager {
     private port: SerialPort | null;
-    private reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-
     private eventTarget: EventTarget;
 
     constructor() {
         this.port = null;
-        this.reader = undefined;
         this.eventTarget = new EventTarget();
         navigator.serial.addEventListener('disconnect', () => {
             this.close();
@@ -20,7 +17,6 @@ export default class SerialManager {
         });
     }
 
-    // Raspberry Pi vendor ID
     private async request(vendorId = 0x2e8a): Promise<SerialPort> {
         const filters = [{ usbVendorId: vendorId }];
         try {
@@ -29,7 +25,7 @@ export default class SerialManager {
         } catch (error) {
             if (error instanceof Error) {
                 if (error.name === 'NotFoundError') {
-                    throw new Error('No compatible devices were found.');
+                    throw new Error('No compatible devices found.');
                 } else if (error.name === 'SecurityError') {
                     throw new Error('Device access permission denied, try again.');
                 } else {
@@ -41,32 +37,42 @@ export default class SerialManager {
         }
     }
 
-    async open(vendorId = 0x2e8a): Promise<void> {
+    async open(vendorId = 0x2e8a, baudRate = 115200, dataBits = 8, stopBits = 1, parity = false): Promise<void> {
         const port = await this.request(vendorId);
-        const [params] = [{ baudRate: 115200 }, { dataBits: 8 }, { stopBits: 1 }, { parity: 'none' }];
+        const [params] = [
+            { baudRate: baudRate },
+            { dataBits: dataBits },
+            { stopBits: stopBits },
+            { parity: parity ? 'true' : 'false' },
+        ];
         this.port = port;
         await port.open(params);
-        this.reader = port.readable?.getReader();
     }
 
     async close(): Promise<void> {
         if (this.port) {
-            if (this.reader) await this.reader.cancel();
             await this.port.close();
             this.port = null;
-            this.reader = undefined;
         }
     }
 
-    async read(): Promise<string> {
+    async read(timeoutMs: number): Promise<string> {
         try {
-            if (this.reader) {
-                const { value, done } = await this.reader.read();
-                if (done) {
-                    throw new Error('Serial port closed.');
+            if (this.port?.readable) {
+                const reader = this.port.readable.getReader();
+                let text = '';
+                const start = Date.now();
+                while (Date.now() - start < timeoutMs) {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        throw new Error('Serial port closed.');
+                    }
+                    text += new TextDecoder().decode(value);
+                    if (text.includes('\n')) {
+                        break;
+                    }
                 }
-                const textDecoder = new TextDecoder('utf-8');
-                const text = textDecoder.decode(value);
+                reader.releaseLock();
                 return text;
             } else {
                 throw new Error('Serial port unavailable.');
@@ -92,15 +98,35 @@ export default class SerialManager {
         }
     }
 
-    async ping(maxRetries = 3, retryDelayMs = 500): Promise<boolean> {
+    async sendCommand(command: string, waitMs: number, readTimeoutMs = 500): Promise<string> {
         try {
-            if (!this.port || !this.port.writable || !this.port.readable) {
-                throw new Error('Serial port unavailable.');
+            await this.write(command + '\n');
+            await new Promise(resolve => setTimeout(resolve, waitMs));
+            const response = await this.read(readTimeoutMs);
+            // We want to filter out the status response if it's there but we also don't want to ignore it
+            const match = response.match(/\npico-fbw (\d+)/);
+            if (match) {
+                const code = parseInt(match[1]);
+                if (code !== 200) {
+                    throw new Error(`Command failed with code ${code}`);
+                }
+                const responseText = response.substring(0, response.indexOf('\n'));
+                return responseText;
             }
+            return response;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to send command: ${error.message}`);
+            } else {
+                throw new Error('An unknown error occurred.');
+            }
+        }
+    }
 
+    async ping(maxRetries = 5, retryDelayMs = 500): Promise<boolean> {
+        try {
             for (let retry = 0; retry < maxRetries; retry++) {
-                await this.write('PING\n');
-                const response = await this.read();
+                const response = await this.sendCommand('PING', 150);
                 if (response.substring(0, 4) === 'PONG') {
                     return true;
                 } else {
@@ -112,25 +138,6 @@ export default class SerialManager {
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to ping device: ${error.message}`);
-            } else {
-                throw new Error('An unknown error occurred.');
-            }
-        }
-    }
-
-    async sendCommand(command: string, timeoutMs = 0): Promise<string> {
-        try {
-            if (!this.port || !this.port.writable || !this.port.readable) {
-                throw new Error('Serial port unavailable.');
-            }
-
-            await this.write(command + '\n');
-            await new Promise(resolve => setTimeout(resolve, timeoutMs));
-            const response = await this.read();
-            return response;
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to send command: ${error.message}`);
             } else {
                 throw new Error('An unknown error occurred.');
             }

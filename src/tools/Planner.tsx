@@ -1,5 +1,5 @@
 import MapElement from './MapElement';
-import PageContentBlock from '../elements/planner/PageContentBlock';
+import PageContentBlock from '../elements/tools/PageContentBlock';
 
 export default function Planner() {
     return (

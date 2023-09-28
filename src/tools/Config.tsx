@@ -1,54 +1,65 @@
 import { useEffect, useState } from 'react';
-import Alert from '../elements/Alert';
-import PageContentBlock from '../elements/planner/PageContentBlock';
 import SerialManager from '../helpers/serialManager';
+import Alert from '../elements/Alert';
+import ConfigViewer from '../elements/tools/ConfigViewer';
+import PageContentBlock from '../elements/tools/PageContentBlock';
 
-// TODO: setting for first-time onboarding to config editor with guided setup
+// TODO: setting for first-time onboarding to config editor with guided setup (and possibly replicate for flight planenr as well)
 
 export default function Config() {
     const [port, setPort] = useState<SerialManager | null>(null);
     const [serialStatus, setSerialStatus] = useState('closed');
+    const [serialInfo, setSerialInfo] = useState<any>(null);
+    const [serialConfig, setSerialConfig] = useState<any>(null);
 
     function serialSupported() {
         return 'serial' in navigator;
     }
 
-    function attemptSerialConnection(serial: SerialManager | null) {
+    async function executeGetCommand(serial: SerialManager, command: string, waitMs = 500) {
+        const response = await serial.sendCommand(command, waitMs);
+        try {
+            return JSON.parse(response);
+        } catch {
+            console.error(`Failed to parse response '${response}' on command '${command}'`);
+            throw new Error(`Failed to execute command '${command}'`);
+        }
+    }
+
+    async function attemptSerialConnection(serial: SerialManager | null) {
         if (serial) {
-            serial
-                .open()
-                .then(() => {
-                    serial
-                        .ping()
-                        .then(result => {
-                            if (result) {
-                                setSerialStatus('open');
-                            }
-                        })
-                        .catch(error => {
-                            setSerialStatus(error.toString());
-                        });
-                })
-                .catch(error => {
+            try {
+                await serial.open();
+                setSerialStatus('connecting');
+                await serial.ping();
+                setSerialInfo(await executeGetCommand(serial, 'GET_INFO', 100));
+                setSerialConfig(await executeGetCommand(serial, 'GET_CONFIG', 300));
+                setSerialStatus('open');
+            } catch (error) {
+                if (error instanceof Error) {
                     setSerialStatus(error.toString());
-                });
+                }
+            }
         }
     }
 
     useEffect(() => {
         if (serialSupported()) {
-            const manager = new SerialManager();
-            setPort(manager);
-            attemptSerialConnection(manager);
-            manager.addEventListener('connect', () => {
+            const serial = new SerialManager();
+            setPort(serial);
+            attemptSerialConnection(serial);
+            serial.addEventListener('connect', () => {
                 setSerialStatus('closed');
             });
-            manager.addEventListener('disconnect', () => {
+            serial.addEventListener('disconnect', () => {
                 setSerialStatus('closed');
             });
             return () => {
-                manager.close();
-                manager.removeEventListener('disconnect', () => {
+                serial.close();
+                serial.removeEventListener('connect', () => {
+                    setSerialStatus('closed');
+                });
+                serial.removeEventListener('disconnect', () => {
                     setSerialStatus('closed');
                 });
             };
@@ -67,10 +78,37 @@ export default function Config() {
                             {serialSupported() ? (
                                 <>
                                     {serialStatus === 'open' ? (
-                                        <div>
-                                            <Alert type="info">Connected.</Alert>
-                                            {/* TODO */}
+                                        <div className="flex flex-col min-h-screen">
+                                            <div className="flex-grow">
+                                                <ConfigViewer data={serialConfig} />
+                                            </div>
+                                            <footer className="bg-gray-900 text-gray-500 p-4">
+                                                <div className="w-full max-w-screen-xl mx-auto">
+                                                    <hr className="my-6 border-gray-700" />
+                                                    <span className="block text-sm text-gray-500 text-center">
+                                                        {serialInfo ? (
+                                                            <>
+                                                                pico{serialInfo.is_pico_w ? '(w)' : ''}-fbw v
+                                                                {serialInfo.version}, API v{serialInfo.version_api},
+                                                                RP2040 v{serialInfo.rp2040_version}
+                                                            </>
+                                                        ) : (
+                                                            <>No device information available</>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </footer>
                                         </div>
+                                    ) : serialStatus === 'connecting' ? (
+                                        <>
+                                            <div className="relative w-full">
+                                                <img
+                                                    src="../../loading.gif"
+                                                    alt="Loading..."
+                                                    className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 mx-auto"
+                                                />
+                                            </div>
+                                        </>
                                     ) : serialStatus === 'closed' ? (
                                         <>
                                             <Alert type="info" className="mx-4 sm:mx-6 lg:mx-0">
@@ -94,7 +132,7 @@ export default function Config() {
                                                 onClick={() => attemptSerialConnection(port)}
                                                 className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
                                             >
-                                                Reconnect
+                                                Connect
                                             </button>
                                         </>
                                     )}
