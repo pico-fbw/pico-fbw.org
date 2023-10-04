@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react';
 import SerialManager from '../helpers/serialManager';
 import Alert from '../elements/Alert';
-import ConfigViewer from '../elements/tools/ConfigViewer';
+import ConfigViewer, { ConfigData } from '../elements/tools/ConfigViewer';
 import PageContentBlock from '../elements/tools/PageContentBlock';
 
 // TODO: setting for first-time onboarding to config editor with guided setup (and possibly replicate for flight planenr as well)
 
+interface DeviceInfo {
+    version: string;
+    version_api: string;
+    version_wifly: string;
+    is_pico_w: boolean;
+    rp2040_version: number;
+}
+
 export default function Config() {
     const [port, setPort] = useState<SerialManager | null>(null);
     const [serialStatus, setSerialStatus] = useState('closed');
-    const [serialInfo, setSerialInfo] = useState<any>(null);
-    const [serialConfig, setSerialConfig] = useState<any>(null);
+
+    const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
+    const [deviceConfig, setDeviceConfig] = useState<ConfigData | null>(null);
 
     function serialSupported() {
         return 'serial' in navigator;
@@ -32,8 +41,8 @@ export default function Config() {
                 await serial.open();
                 setSerialStatus('connecting');
                 await serial.ping();
-                setSerialInfo(await executeGetCommand(serial, 'GET_INFO', 100));
-                setSerialConfig(await executeGetCommand(serial, 'GET_CONFIG', 300));
+                setDeviceInfo(await executeGetCommand(serial, 'GET_INFO', 100));
+                setDeviceConfig(await executeGetCommand(serial, 'GET_CONFIG', 300));
                 setSerialStatus('open');
             } catch (error) {
                 if (error instanceof Error) {
@@ -80,17 +89,17 @@ export default function Config() {
                                     {serialStatus === 'open' ? (
                                         <div className="flex flex-col min-h-screen">
                                             <div className="flex-grow">
-                                                <ConfigViewer data={serialConfig} />
+                                                <ConfigViewer data={deviceConfig} />
                                             </div>
                                             <footer className="bg-gray-900 text-gray-500 p-4">
                                                 <div className="w-full max-w-screen-xl mx-auto">
                                                     <hr className="my-6 border-gray-700" />
                                                     <span className="block text-sm text-gray-500 text-center">
-                                                        {serialInfo ? (
+                                                        {deviceInfo ? (
                                                             <>
-                                                                pico{serialInfo.is_pico_w ? '(w)' : ''}-fbw v
-                                                                {serialInfo.version}, API v{serialInfo.version_api},
-                                                                RP2040 v{serialInfo.rp2040_version}
+                                                                pico{deviceInfo.is_pico_w ? '(w)' : ''}-fbw v
+                                                                {deviceInfo.version}, API v{deviceInfo.version_api},
+                                                                RP2040 v{deviceInfo.rp2040_version}
                                                             </>
                                                         ) : (
                                                             <>No device information available</>
