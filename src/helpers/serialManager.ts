@@ -1,10 +1,12 @@
 export default class SerialManager {
     private port: SerialPort | null;
     private eventTarget: EventTarget;
+    private isLocked: boolean;
 
     constructor() {
         this.port = null;
         this.eventTarget = new EventTarget();
+        this.isLocked = false;
         navigator.serial.addEventListener('disconnect', () => {
             this.close();
             this.eventTarget.dispatchEvent(new Event('disconnect'));
@@ -60,6 +62,7 @@ export default class SerialManager {
         try {
             if (this.port?.readable) {
                 const reader = this.port.readable.getReader();
+                this.isLocked = true;
                 let text = '';
                 const start = Date.now();
                 while (Date.now() - start < timeoutMs) {
@@ -73,6 +76,7 @@ export default class SerialManager {
                     }
                 }
                 reader.releaseLock();
+                this.isLocked = false;
                 return text;
             } else {
                 throw new Error('Serial port unavailable.');
@@ -90,16 +94,21 @@ export default class SerialManager {
         if (this.port?.writable) {
             const encoder = new TextEncoder();
             const writer = this.port.writable.getWriter();
+            this.isLocked = true;
             await writer.write(encoder.encode(data));
             writer.releaseLock();
+            this.isLocked = false;
         } else {
-            this.close();
             throw new Error('Serial port unavailable.');
         }
     }
 
-    async sendCommand(command: string, waitMs: number, readTimeoutMs = 500): Promise<string> {
+    async sendCommand(command: string, waitMs = 200, readTimeoutMs = 500): Promise<string> {
         try {
+            if (this.isLocked) {
+                await new Promise(resolve => setTimeout(resolve, readTimeoutMs));
+                return await this.sendCommand(command, waitMs, readTimeoutMs);
+            }
             await this.write(command + '\n');
             await new Promise(resolve => setTimeout(resolve, waitMs));
             const response = await this.read(readTimeoutMs);

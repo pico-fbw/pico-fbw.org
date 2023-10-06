@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import SerialManager from '../helpers/serialManager';
 import Alert from '../elements/Alert';
-import ConfigViewer, { ConfigData } from '../elements/tools/ConfigViewer';
+import ConfigViewer from '../elements/tools/ConfigViewer';
 import PageContentBlock from '../elements/tools/PageContentBlock';
 
 // TODO: setting for first-time onboarding to config editor with guided setup (and possibly replicate for flight planenr as well)
@@ -17,22 +17,10 @@ interface DeviceInfo {
 export default function Config() {
     const [port, setPort] = useState<SerialManager | null>(null);
     const [serialStatus, setSerialStatus] = useState('closed');
-
     const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
-    const [deviceConfig, setDeviceConfig] = useState<ConfigData | null>(null);
 
     function serialSupported() {
         return 'serial' in navigator;
-    }
-
-    async function executeGetCommand(serial: SerialManager, command: string, waitMs = 500) {
-        const response = await serial.sendCommand(command, waitMs);
-        try {
-            return JSON.parse(response);
-        } catch {
-            console.error(`Failed to parse response '${response}' on command '${command}'`);
-            throw new Error(`Failed to execute command '${command}'`);
-        }
     }
 
     async function attemptSerialConnection(serial: SerialManager | null) {
@@ -41,8 +29,8 @@ export default function Config() {
                 await serial.open();
                 setSerialStatus('connecting');
                 await serial.ping();
-                setDeviceInfo(await executeGetCommand(serial, 'GET_INFO', 100));
-                setDeviceConfig(await executeGetCommand(serial, 'GET_CONFIG', 300));
+                const info = await serial.sendCommand('GET_INFO');
+                setDeviceInfo(JSON.parse(info));
                 setSerialStatus('open');
             } catch (error) {
                 if (error instanceof Error) {
@@ -89,7 +77,7 @@ export default function Config() {
                                     {serialStatus === 'open' ? (
                                         <div className="flex flex-col min-h-screen">
                                             <div className="flex-grow">
-                                                <ConfigViewer data={deviceConfig} />
+                                                <ConfigViewer serial={port} setSerialStatus={setSerialStatus} />
                                             </div>
                                             <footer className="bg-gray-900 text-gray-500 p-4">
                                                 <div className="w-full max-w-screen-xl mx-auto">
