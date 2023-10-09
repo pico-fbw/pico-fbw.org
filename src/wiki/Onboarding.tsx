@@ -95,7 +95,7 @@ export default function Onboarding() {
                                     bgColor="bg-blue-600"
                                     imageSrc="../../temp.png"
                                     title="Buy pico-fbw"
-                                    link={'https://pico-fbw.com'}
+                                    link={'https://store.pico-fbw.com'}
                                     external
                                     description="Purchase our custom-built, pre-configured boards"
                                 />

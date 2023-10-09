@@ -98,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
                     {showNavbar && (
                         <>
                             {location.pathname === '/' && (
-                                <NavLink to={'/wiki/onboarding'} className="text-sm font-semibold leading-6 text-white">
+                                <NavLink to={'/about'} className="text-sm font-semibold leading-6 text-white">
                                     About <span aria-hidden="true">&rarr;</span>
                                 </NavLink>
                             )}
