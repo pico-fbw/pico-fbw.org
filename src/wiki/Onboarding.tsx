@@ -5,7 +5,6 @@ import PageContentBlock from '../elements/tools/PageContentBlock';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { NavLink } from 'react-router-dom';
 
-
 interface ClickableProps {
     link: string;
     external: boolean;
@@ -14,21 +13,13 @@ interface ClickableProps {
 function Clickable({ link, external, children }: ClickableProps) {
     if (external) {
         return (
-            <a
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-            >
+            <a href={link} target="_blank" rel="noopener noreferrer">
                 {children}
             </a>
         );
     } else {
         // Render a NavLink for internal links
-        return (
-            <NavLink to={link}>
-                {children}
-            </NavLink>
-        );
+        return <NavLink to={link}>{children}</NavLink>;
     }
 }
 
@@ -46,20 +37,20 @@ interface OptionCardProps {
 function OptionCard({ bgColor, imageSrc, title, description, link, external = false }: OptionCardProps) {
     return (
         <Clickable link={link} external={external}>
-        <div
-            className={`relative flex rounded-xl ${bgColor} text-white cursor-pointer p-5 duration-250 transition-all transform scale-100 hover:scale-105 hover:shadow-lg`}
-        >
-            <span className="flex flex-1">
-                <span className="flex flex-col">
-                    <div className="h-60 mb-4">
-                        <img src={imageSrc} alt={title} className="h-full w-auto" />
-                    </div>
-                    <h2 className="text-lg font-semibold mb-2">{title}</h2>
-                    <span className="text-sm font-medium text-gray-200">{description}</span>
+            <div
+                className={`relative flex rounded-xl ${bgColor} text-white cursor-pointer p-5 duration-250 transition-all transform scale-100 hover:scale-105 hover:shadow-lg`}
+            >
+                <span className="flex flex-1">
+                    <span className="flex flex-col">
+                        <div className="h-60 mb-4">
+                            <img src={imageSrc} alt={title} className="h-full w-auto" />
+                        </div>
+                        <h2 className="text-lg font-semibold mb-2">{title}</h2>
+                        <span className="text-sm font-medium text-gray-200">{description}</span>
+                    </span>
                 </span>
-            </span>
-            <ArrowRightIcon className={'h-5 w-5 text-white'} aria-hidden="true" />
-        </div>
+                <ArrowRightIcon className={'h-5 w-5 text-white'} aria-hidden="true" />
+            </div>
         </Clickable>
     );
 }
@@ -87,11 +78,10 @@ export default function Onboarding() {
                             Let&apos;s get you set up.
                         </h1>
 
-                    {/* Option card group */}
+                        {/* Option card group */}
                     </Transition.Child>
                     <div className="flex items-center">
                         <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-2 md:gap-x-8">
-                            
                             {/* "Blue Buy" option card */}
                             <Transition.Child
                                 enter="transition-opacity duration-700"
@@ -132,7 +122,7 @@ export default function Onboarding() {
                     </div>
                 </div>
             </Transition.Root>
-            
+
             <Transition.Root show={false}>
                 <div className="h-screen flex items-center justify-center">
                     <div className="flex flex-col items-center justify-center">

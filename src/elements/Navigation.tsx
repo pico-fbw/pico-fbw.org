@@ -74,11 +74,9 @@ const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
                         onClick={() => setMobileMenuOpen(showNavbar)}
                     >
                         <span className="sr-only">Open main menu</span>
-                            <div className="h-6 w-6">
-                        {showNavbar && (
-                                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-                                )}
-                            </div>
+                        <div className="h-6 w-6">
+                            {showNavbar && <Bars3Icon className="h-6 w-6" aria-hidden="true" />}
+                        </div>
                     </button>
                 </div>
                 <div className="hidden lg:flex lg:gap-x-12 h-6">
