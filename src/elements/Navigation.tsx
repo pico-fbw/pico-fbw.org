@@ -3,7 +3,11 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { NavLink } from 'react-router-dom';
 
-function Navigation({ showNavbar = true }) {
+export interface NavigationProps {
+    showNavbar?: boolean;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
     const navigation = [
         { name: 'Home', to: '/' },
         { name: 'Flight Planner', to: '/tools/planner' },
@@ -67,15 +71,19 @@ function Navigation({ showNavbar = true }) {
                     <button
                         type="button"
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-400"
-                        onClick={() => setMobileMenuOpen(true)}
+                        onClick={() => setMobileMenuOpen(showNavbar)}
                     >
                         <span className="sr-only">Open main menu</span>
-                        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                            <div className="h-6 w-6">
+                        {showNavbar && (
+                                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                                )}
+                            </div>
                     </button>
                 </div>
-                {showNavbar && (
-                    <>
-                        <div className="hidden lg:flex lg:gap-x-12">
+                <div className="hidden lg:flex lg:gap-x-12 h-6">
+                    {showNavbar && (
+                        <>
                             {navigation.map(item => (
                                 <NavLink
                                     key={item.name}
@@ -85,16 +93,20 @@ function Navigation({ showNavbar = true }) {
                                     {item.name}
                                 </NavLink>
                             ))}
-                        </div>
-                        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        </>
+                    )}
+                </div>
+                <div className="hidden lg:flex lg:flex-1 lg:justify-end h-6">
+                    {showNavbar && (
+                        <>
                             {location.pathname === '/' && (
                                 <NavLink to={'/wiki/onboarding'} className="text-sm font-semibold leading-6 text-white">
-                                    Get Started <span aria-hidden="true">&rarr;</span>
+                                    About <span aria-hidden="true">&rarr;</span>
                                 </NavLink>
                             )}
-                        </div>
-                    </>
-                )}
+                        </>
+                    )}
+                </div>
             </nav>
             <Transition show={mobileMenuOpen} as={Fragment}>
                 <Dialog as="div" className="lg:hidden" onClose={() => setMobileMenuOpen(false)}>
@@ -209,6 +221,6 @@ function Navigation({ showNavbar = true }) {
             </Transition>
         </header>
     );
-}
+};
 
 export default Navigation;

@@ -1,40 +1,139 @@
 import { useEffect, useState } from 'react';
 import { Transition } from '@headlessui/react';
 import Navigation from '../elements/Navigation';
+import PageContentBlock from '../elements/tools/PageContentBlock';
+import { ArrowRightIcon } from '@heroicons/react/20/solid';
+import { NavLink } from 'react-router-dom';
+
+
+interface ClickableProps {
+    link: string;
+    external: boolean;
+    children: React.ReactNode;
+}
+function Clickable({ link, external, children }: ClickableProps) {
+    if (external) {
+        return (
+            <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {children}
+            </a>
+        );
+    } else {
+        // Render a NavLink for internal links
+        return (
+            <NavLink to={link}>
+                {children}
+            </NavLink>
+        );
+    }
+}
+
+//option card template
+
+interface OptionCardProps {
+    bgColor: string;
+    imageSrc: string;
+    title: string;
+    description: string;
+    link: string;
+    external?: boolean;
+}
+
+function OptionCard({ bgColor, imageSrc, title, description, link, external = false }: OptionCardProps) {
+    return (
+        <Clickable link={link} external={external}>
+        <div
+            className={`relative flex rounded-xl ${bgColor} text-white cursor-pointer p-5 duration-250 transition-all transform scale-100 hover:scale-105 hover:shadow-lg`}
+        >
+            <span className="flex flex-1">
+                <span className="flex flex-col">
+                    <div className="h-60 mb-4">
+                        <img src={imageSrc} alt={title} className="h-full w-auto" />
+                    </div>
+                    <h2 className="text-lg font-semibold mb-2">{title}</h2>
+                    <span className="text-sm font-medium text-gray-200">{description}</span>
+                </span>
+            </span>
+            <ArrowRightIcon className={'h-5 w-5 text-white'} aria-hidden="true" />
+        </div>
+        </Clickable>
+    );
+}
 
 export default function Onboarding() {
-    const [isHovered1, setIsHovered1] = useState(false);
-    const [isHovered2, setIsHovered2] = useState(false);
-
-    const [currentStep, setCurrentStep] = useState(1);
-    const [showStep1, setshowStep1] = useState(false);
-    const [showStep2, setshowStep2] = useState(false);
-    const handleChoiceClick = () => {
-        switch (currentStep) {
-            case 1:
-                setshowStep1(false);
-                setTimeout(() => {
-                    setshowStep2(true);
-                    setCurrentStep(2);
-                }, 800);
-                break;
-            case 2:
-                setshowStep2(false);
-                break;
-            default:
-                break;
-        }
-    };
+    const [showInfo, setShowInfo] = useState(false);
 
     useEffect(() => {
-        document.title = 'pico-fbw | Getting Started';
-        setshowStep1(true);
+        setShowInfo(true);
     }, []);
-
     return (
-        <div className="bg-gray-900">
+        <PageContentBlock hideSidebar title={'pico-fbw | Onboarding'}>
             <Navigation showNavbar={false} />
-            <Transition.Root show={showStep1}>
+            <Transition.Root show={showInfo}>
+                <div className="h-screen flex flex-col justify-center items-center mx-4 mt-16 sm:mt-0">
+                    <Transition.Child
+                        enter="transition-opacity duration-700"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-700 delay-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-8">
+                            Let&apos;s get you set up.
+                        </h1>
+
+                    {/* Option card group */}
+                    </Transition.Child>
+                    <div className="flex items-center">
+                        <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-2 md:gap-x-8">
+                            
+                            {/* "Blue Buy" option card */}
+                            <Transition.Child
+                                enter="transition-opacity duration-700"
+                                enterFrom="opacity-0"
+                                enterTo="opacity-100"
+                                leave="transition-opacity duration-700"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                            >
+                                <OptionCard
+                                    bgColor="bg-blue-600"
+                                    imageSrc="../../temp.png"
+                                    title="Buy pico-fbw"
+                                    link={'https://pico-fbw.com'}
+                                    external
+                                    description="Purchase our custom-built, pre-configured boards"
+                                />
+                            </Transition.Child>
+
+                            {/* "Gray DIY option card" */}
+                            <Transition.Child
+                                enter="transition-opacity duration-700 delay-100"
+                                enterFrom="opacity-0"
+                                enterTo="opacity-100"
+                                leave="transition-opacity duration-700"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                            >
+                                <OptionCard
+                                    bgColor="bg-white/5"
+                                    imageSrc="../../icon.svg"
+                                    title="Make it yourself"
+                                    link={'/wiki'}
+                                    description="Build and install pico-fbw on your own Raspberry Pi Pico"
+                                />
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </div>
+            </Transition.Root>
+            
+            <Transition.Root show={false}>
                 <div className="h-screen flex items-center justify-center">
                     <div className="flex flex-col items-center justify-center">
                         <Transition.Child
@@ -46,85 +145,12 @@ export default function Onboarding() {
                             leaveTo="opacity-0"
                         >
                             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-8">
-                                Let&apos;s get you set up.
-                            </h1>
-                        </Transition.Child>
-                        <Transition.Child
-                            className="w-4/5 h-auto mt-4"
-                            enter="transition-opacity duration-700"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-700"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div
-                                className={`relative rounded-xl bg-blue-600 text-white p-4 mx-4 transition-all duration-500 ease-in-out ${
-                                    isHovered1 ? 'transform scale-105 hover:shadow-lg' : 'transform scale-100'
-                                }`}
-                                onMouseEnter={() => setIsHovered1(true)}
-                                onMouseLeave={() => setIsHovered1(false)}
-                                onClick={handleChoiceClick}
-                            >
-                                <img
-                                    src="../../temp.png"
-                                    alt="pico-fbw board image"
-                                    className="w-auto h-40 lg:h-48 mb-4"
-                                />
-                                {/* TODO: short descriptions and titles for each option */}
-                                <h2 className="text-lg font-semibold mb-2">pico-fbw board</h2>
-                                <p className="text-sm">Description</p>
-                                <p className="absolute bottom-2 right-2 text-white text-xl">&rarr;</p>
-                            </div>
-                        </Transition.Child>
-
-                        <Transition.Child
-                            className="w-4/5 h-auto mt-4"
-                            enter="transition-opacity duration-700 delay-100"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-700"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div
-                                className={`relative rounded-xl bg-pink-600 text-white p-4 mx-4 transition-all duration-500 ease-in-out ${
-                                    isHovered2 ? 'transform scale-105 hover:shadow-lg' : 'transform scale-100'
-                                }`}
-                                onMouseEnter={() => setIsHovered2(true)}
-                                onMouseLeave={() => setIsHovered2(false)}
-                                onClick={handleChoiceClick}
-                            >
-                                <img src="" alt="Image 2" className="w-auto h-40 lg:h-48 mb-4" />
-                                <h2 className="text-lg font-semibold mb-2">Title 2</h2>
-                                <p className="text-sm">Description</p>
-                                <p className="absolute bottom-2 right-2 text-white text-xl">&rarr;</p>
-                            </div>
-                        </Transition.Child>
-                    </div>
-                </div>
-            </Transition.Root>
-            <Transition.Root show={showStep2}>
-                <div className="h-screen flex items-center justify-center">
-                    <div className="flex flex-col items-center justify-center">
-                        <Transition.Child
-                            enter="transition-opacity duration-700"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-700 delay-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <h1
-                                className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-8"
-                                onClick={handleChoiceClick}
-                            >
-                                Im not doing this tonight lol
+                                Redirecting...
                             </h1>
                         </Transition.Child>
                     </div>
                 </div>
             </Transition.Root>
-        </div>
+        </PageContentBlock>
     );
 }

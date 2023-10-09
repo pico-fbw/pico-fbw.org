@@ -27,6 +27,7 @@ export default function App() {
                 <Route path="*" element={<NoMatch />} />
             </Route>
             <Route path="/tools">
+                <Route index element={<NoMatch />} />
                 <Route path="planner">
                     <Route index element={<Planner />} />
                     <Route path="settings" element={<Settings />} />

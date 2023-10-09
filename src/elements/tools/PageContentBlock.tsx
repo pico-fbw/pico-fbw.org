@@ -5,8 +5,9 @@ import Sidebar from './Sidebar';
 export interface PageContentBlockProps {
     title?: string;
     children: ReactNode;
+    hideSidebar?: boolean;
 }
-const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, children }) => {
+const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, children, hideSidebar }) => {
     useEffect(() => {
         if (title) {
             document.title = title;
@@ -16,8 +17,8 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, children }) 
     return (
         <>
             <div>
-                <Sidebar />
-                <div className="xl:pl-72">
+                {!hideSidebar && <Sidebar />}
+                <div className={!hideSidebar ? 'xl:pl-72' : ''}>
                     <main>{children}</main>
                 </div>
             </div>
