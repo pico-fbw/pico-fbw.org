@@ -4,15 +4,15 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { NavLink } from 'react-router-dom';
 
 export interface NavigationProps {
-    showNavbar?: boolean;
+    hideLinks?: boolean;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
+const Navigation: React.FC<NavigationProps> = ({ hideLinks }) => {
     const navigation = [
         { name: 'Home', to: '/' },
-        { name: 'Flight Planner', to: '/tools/planner' },
+        { name: 'Tools', to: '/tools/planner' },
         { name: 'Wiki', to: '/wiki' },
-        { name: 'Shop', to: 'https://shop.pico-fbw.com' },
+        { name: 'About', to: '/about' },
     ];
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,16 +71,16 @@ const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
                     <button
                         type="button"
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-400"
-                        onClick={() => setMobileMenuOpen(showNavbar)}
+                        onClick={() => setMobileMenuOpen(!hideLinks)}
                     >
                         <span className="sr-only">Open main menu</span>
                         <div className="h-6 w-6">
-                            {showNavbar && <Bars3Icon className="h-6 w-6" aria-hidden="true" />}
+                            {!hideLinks && <Bars3Icon className="h-6 w-6" aria-hidden="true" />}
                         </div>
                     </button>
                 </div>
                 <div className="hidden lg:flex lg:gap-x-12 h-6">
-                    {showNavbar && (
+                    {!hideLinks && (
                         <>
                             {navigation.map(item => (
                                 <NavLink
@@ -95,12 +95,15 @@ const Navigation: React.FC<NavigationProps> = ({ showNavbar = true }) => {
                     )}
                 </div>
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end h-6">
-                    {showNavbar && (
+                    {!hideLinks && (
                         <>
                             {location.pathname === '/' && (
-                                <NavLink to={'/about'} className="text-sm font-semibold leading-6 text-white">
-                                    About <span aria-hidden="true">&rarr;</span>
-                                </NavLink>
+                                <a
+                                    href={'https://shop.pico-fbw.com'}
+                                    className="text-sm font-semibold leading-6 text-white"
+                                >
+                                    Shop <span aria-hidden="true">&rarr;</span>
+                                </a>
                             )}
                         </>
                     )}

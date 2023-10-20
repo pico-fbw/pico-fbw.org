@@ -13,17 +13,96 @@ interface DisplayConfigDataProps {
     setSerialStatus: (status: string) => void;
 }
 
-const config = {
+interface Config {
+    General: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Control: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Limits: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    FlyingWing: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Pins0: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Pins1: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Sensors: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    PID0: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    PID1: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Debug: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: { [key: number]: string };
+    }[];
+    Wifly: {
+        name: string;
+        id: string;
+        desc: string;
+        enumMap?: undefined;
+    }[];
+}
+
+const config: Config = {
     General: [
         {
             name: 'Control Mode',
             id: 'controlMode',
             desc: 'The type of controls for your aircraft. Conventional uses the typical control layout with ailerons, elevators, and a rudder, while flying wing uses elevons and no rudder.',
+            enumMap: {
+                0: 'Conventional (3-axis) with Autothrottle',
+                1: 'Conventional (3-axis)',
+                2: 'Flying Wing with Autothrottle',
+                3: 'Flying Wing',
+            },
         },
         {
             name: 'Switch Type',
             id: 'switchType',
             desc: 'The type of switch you are using, three-position is default and highly recommended.',
+            enumMap: {
+                0: 'Two-position',
+                1: 'Three-position',
+            },
         },
         {
             name: 'Max Calibration Offset',
@@ -44,16 +123,29 @@ const config = {
             name: 'API Enabled',
             id: 'apiEnabled',
             desc: 'Whether or not to enable the API.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
-            name: 'Use Network Password',
-            id: 'wiflyUsePass',
-            desc: 'Whether or not to use a password on the Wi-Fly network. If disabled, the network will appear as "open".',
+            name: 'Wi-Fly Enabled',
+            id: 'wiflyStatus',
+            desc: 'Whether or not Wi-Fly is enabled. If you would like the network to be password-protected, select that option and configure the password in the `Wi-Fly` section.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled (no password)',
+                2: 'Enabled (with password)',
+            },
         },
         {
             name: 'Skip Calibration',
             id: 'skipCalibration',
-            desc: 'Whether or not to skip calibration of critical systems on bootup. If enabled, no calibration will be performed and thus the systems will be disabled.',
+            desc: 'Whether or not to skip calibration of critical systems on bootup. If skipped, no calibration will be performed and thus the skipped systems will be disabled.',
+            enumMap: {
+                0: "Don't skip",
+                1: 'Skip',
+            },
         },
     ],
 
@@ -249,16 +341,28 @@ const config = {
             name: 'Reverse Roll',
             id: 'reverseRoll',
             desc: 'Reverses the roll direction.',
+            enumMap: {
+                0: 'Normal',
+                1: 'Reversed',
+            },
         },
         {
             name: 'Reverse Pitch',
             id: 'reversePitch',
             desc: 'Reverses the pitch direction.',
+            enumMap: {
+                0: 'Normal',
+                1: 'Reversed',
+            },
         },
         {
             name: 'Reverse Yaw',
             id: 'reverseYaw',
             desc: 'Reverses the yaw direction.',
+            enumMap: {
+                0: 'Normal',
+                1: 'Reversed',
+            },
         },
         {
             name: '',
@@ -272,6 +376,10 @@ const config = {
             name: 'IMU Model',
             id: 'imuModel',
             desc: 'The model of the IMU that is being used.',
+            enumMap: {
+                0: 'Unknown',
+                1: 'BNO055',
+            },
         },
         {
             name: 'IMU SDA Pin',
@@ -287,6 +395,10 @@ const config = {
             name: 'GPS Enabled',
             id: 'gpsEnabled',
             desc: 'Whether or not to enable the GPS. There are no module types, almost all GPS modules use the NMEA-0183 standard so that is what is supported here.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'GPS Baudrate',
@@ -297,6 +409,10 @@ const config = {
             name: 'GPS Command Type',
             id: 'gpsCommandType',
             desc: "The command type of the GPS. Please let me know if there's a command type you would like supported! MTK appears to be the most common.",
+            enumMap: {
+                0: 'Unknown',
+                1: 'MTK',
+            },
         },
         {
             name: 'GPS TX Pin',
@@ -401,36 +517,64 @@ const config = {
             name: 'Debug Enabled',
             id: 'debug',
             desc: 'Whether the current firmware build is considered a debug build. This value may be modified, but will be reset upon the next reboot.',
+            enumMap: {
+                0: 'Release',
+                1: 'Debug',
+            },
         },
         {
             name: 'Debug: FBW',
             id: 'debug_fbw',
             desc: 'Enables miscellaneous logs, warnings, and error statements.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Debug: IMU',
             id: 'debug_imu',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the IMU.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Debug: GPS',
             id: 'debug_gps',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the GPS.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Debug: Wi-Fly',
             id: 'debug_wifly',
             desc: 'Enables more specific logs, warnings, and errors pertaining to Wi-Fly.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Debug: Network',
             id: 'debug_network',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the network stack.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Debug: Network Dump',
             id: 'dump_network',
             desc: 'Dumps the contents of Wi-Fly network communication.',
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
         },
         {
             name: 'Watchdog Timeout',
@@ -448,7 +592,7 @@ const config = {
         {
             name: 'Network Password',
             id: 'pass',
-            desc: 'The password for the wireless network that Wi-Fly creates. Must be at least eight characters long, and will only be used if `Use Network Password` is enabled in the `General` section.',
+            desc: 'The password for the wireless network that Wi-Fly creates. Must be at least eight characters long, and will only be used if `Wi-Fly Enabled` is set to `Enabled (with password)` in the `General` section.',
         },
     ],
 };
@@ -496,14 +640,13 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
             await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet}`, 50);
             const response = await serial.sendCommand(`GET_CONFIG ${sectionName} ${keyId}`, 50);
             const newc = JSON.parse(response)?.key;
-            if (!newc || newc !== toSet) {
-                console.warn(newc);
-                console.warn(toSet);
+            if ((!newc || newc !== toSet) && toSetNum !== 0) {
+                console.warn(`Value read back was ${newc}, should have been ${toSet}`);
                 throw new Error('Failed to verify config change');
             }
         } catch (error) {
             if (error instanceof Error) {
-                setSerialStatus(`Failed to set new config value.: ${error.message}`);
+                setSerialStatus(`Failed to set new config value: ${error.message}`);
             }
         }
     };
@@ -525,7 +668,6 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
     useEffect(() => {
         getConfigData();
     }, []);
-
     return data ? (
         <div className="divide-y divide-white/5">
             {data.sections.map((section, sectionIndex) => (
@@ -543,19 +685,44 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                             {config[section.name as keyof typeof config][keyIndex].desc}
                                         </div>
                                         <div className="mt-2">
-                                            <input
-                                                type="text"
-                                                className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
-                                                value={value.toString()}
-                                                onChange={e =>
-                                                    handleConfigChange(
-                                                        section.name,
-                                                        sectionIndex,
-                                                        keyIndex,
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {config[section.name as keyof typeof config][keyIndex].enumMap ? (
+                                                // Dropdown for enums
+                                                <select
+                                                    className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
+                                                    value={value.toString()}
+                                                    onChange={e =>
+                                                        handleConfigChange(
+                                                            section.name,
+                                                            sectionIndex,
+                                                            keyIndex,
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                >
+                                                    {Object.entries(
+                                                        config[section.name as keyof typeof config][keyIndex].enumMap!,
+                                                    ).map(([enumKey, enumValue]) => (
+                                                        <option key={enumKey} value={enumKey}>
+                                                            {enumValue}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                // Input for strings and numerical values
+                                                <input
+                                                    type="text"
+                                                    className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
+                                                    value={value.toString()}
+                                                    onChange={e =>
+                                                        handleConfigChange(
+                                                            section.name,
+                                                            sectionIndex,
+                                                            keyIndex,
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            )}
                                         </div>
                                     </li>
                                 ),

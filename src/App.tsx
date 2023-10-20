@@ -1,4 +1,5 @@
 import { Link, Routes, Route } from 'react-router-dom';
+import About from './About';
 import Index from './Index';
 import Planner from './tools/Planner';
 import Settings from './tools/Settings';
@@ -24,6 +25,7 @@ export default function App() {
         <Routes>
             <Route path="/">
                 <Route index element={<Index />} />
+                <Route path="about" element={<About />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
             <Route path="/tools">
@@ -33,7 +35,7 @@ export default function App() {
                     <Route path="settings" element={<Settings />} />
                     <Route path="*" element={<NoMatch />} />
                 </Route>
-                <Route path="config" element={<Config />}></Route>
+                <Route path="config" element={<Config />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
             <Route path="/wiki">

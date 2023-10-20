@@ -23,8 +23,6 @@ function Clickable({ link, external, children }: ClickableProps) {
     }
 }
 
-//option card template
-
 interface OptionCardProps {
     bgColor: string;
     imageSrc: string;
@@ -62,8 +60,8 @@ export default function Onboarding() {
         setShowInfo(true);
     }, []);
     return (
-        <PageContentBlock hideSidebar title={'pico-fbw | Onboarding'}>
-            <Navigation showNavbar={false} />
+        <PageContentBlock hideSidebar title={'pico-fbw | Get Started'}>
+            <Navigation hideLinks />
             <Transition.Root show={showInfo}>
                 <div className="h-screen flex flex-col justify-center items-center mx-4 mt-16 sm:mt-0">
                     <Transition.Child
@@ -95,7 +93,7 @@ export default function Onboarding() {
                                     bgColor="bg-blue-600"
                                     imageSrc="../../temp.png"
                                     title="Buy pico-fbw"
-                                    link={'https://store.pico-fbw.com'}
+                                    link={'https://shop.pico-fbw.com'}
                                     external
                                     description="Purchase our custom-built, pre-configured boards"
                                 />
