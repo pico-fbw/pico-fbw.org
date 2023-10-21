@@ -296,7 +296,7 @@ function MapElement() {
                                         <Menu.Item>
                                             {({ active }) => (
                                                 <NavLink
-                                                    to={'/tools/planner/settings'}
+                                                    to={'/tools/settings'}
                                                     className={classNames(
                                                         active ? 'bg-gray-700 text-gray-100' : 'text-gray-400',
                                                         'group flex items-center px-4 py-2 text-sm',

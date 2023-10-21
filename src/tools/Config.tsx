@@ -122,7 +122,7 @@ export default function Config() {
                                     ) : (
                                         <>
                                             <Alert type="warning" className="mx-4 sm:mx-6 lg:mx-0">
-                                                {serialStatus.substring(serialStatus.indexOf(':') + 1)}
+                                                {serialStatus}
                                             </Alert>
                                             <button
                                                 type="button"

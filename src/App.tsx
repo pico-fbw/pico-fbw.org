@@ -1,8 +1,8 @@
-import { Link, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Link, Route } from 'react-router-dom';
 import About from './About';
 import Index from './Index';
 import Planner from './tools/Planner';
-import Settings from './tools/Settings';
+import Setting from './tools/Setting';
 import Config from './tools/Config';
 import Wiki from './wiki/Wiki';
 import Onboarding from './wiki/Onboarding';
@@ -20,9 +20,9 @@ function NoMatch() {
     );
 }
 
-export default function App() {
-    return (
-        <Routes>
+const App = createBrowserRouter(
+    createRoutesFromElements(
+        <>
             <Route path="/">
                 <Route index element={<Index />} />
                 <Route path="about" element={<About />} />
@@ -32,9 +32,9 @@ export default function App() {
                 <Route index element={<NoMatch />} />
                 <Route path="planner">
                     <Route index element={<Planner />} />
-                    <Route path="settings" element={<Settings />} />
                     <Route path="*" element={<NoMatch />} />
                 </Route>
+                <Route path="settings" element={<Setting />} />
                 <Route path="config" element={<Config />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
@@ -43,6 +43,8 @@ export default function App() {
                 <Route path="onboarding" element={<Onboarding />} />
                 <Route path="*" element={<NoMatch />} />
             </Route>
-        </Routes>
-    );
-}
+        </>,
+    ),
+);
+
+export default App;

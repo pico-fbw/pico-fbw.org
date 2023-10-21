@@ -1,6 +1,8 @@
-export default class {
+export default class Settings {
     static setting = {
         gpsNumOffsetSamples: { name: 'gpsNumOffsetSamples', defaultValue: '0' },
+        configAutoSave: { name: 'configAutoSave', defaultValue: '0' },
+        internal_configOnboarded: { name: 'configOnboarded', defaultValue: '0' },
     } as const;
 
     static get(settingKey: keyof typeof this.setting): string {

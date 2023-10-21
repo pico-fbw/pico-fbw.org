@@ -7,7 +7,7 @@ import { Bars3Icon } from '@heroicons/react/20/solid';
 const navigation = [
     { name: 'Home', to: '/', icon: HomeIcon, end: true },
     { name: 'Planner', to: '/tools/planner', icon: GlobeAmericasIcon, end: true },
-    { name: 'Planner Settings', to: '/tools/planner/settings', icon: Cog6ToothIcon, end: false },
+    { name: 'Settings', to: '/tools/settings', icon: Cog6ToothIcon, end: false },
     { name: 'Config Editor', to: '/tools/config', icon: DocumentTextIcon, end: true },
 ];
 

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import SerialManager from '../../helpers/serialManager';
+import Settings from '../../helpers/settings';
+import { unstable_usePrompt } from 'react-router-dom';
 
 interface ConfigData {
     sections: {
@@ -599,6 +601,9 @@ const config: Config = {
 
 function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
     const [data, setData] = useState<ConfigData | null>(null);
+    const [unsavedChanges, setUnsavedChanges] = useState(false);
+
+    const autosave = Settings.get(Settings.setting.configAutoSave.name) === '1';
 
     if (!serial) {
         setSerialStatus('No serial port available.');
@@ -617,7 +622,28 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         }
     };
 
-    const handleConfigChange = async (sectionName: string, sectionIndex: number, keyIndex: number, value: string) => {
+    const handleSetConfig = async () => {
+        try {
+            await serial.sendCommand('SET_CONFIG', 400);
+            if (JSON.stringify(JSON.parse(await serial.sendCommand('GET_CONFIG'))) !== JSON.stringify(data)) {
+                console.error('Failed to verify config save');
+                throw new Error('Failed to verify config save');
+            }
+            setUnsavedChanges(false);
+        } catch (error) {
+            if (error instanceof Error) {
+                setSerialStatus(`Failed to save config: ${error.message}`);
+            }
+        }
+    };
+
+    const handleConfigChange = async (
+        sectionName: string,
+        sectionIndex: number,
+        keyIndex: number,
+        value: string,
+        write = true,
+    ) => {
         let toSet: number | string = value;
         let toSetNum = parseFloat(value);
         if (isNaN(toSetNum)) {
@@ -635,32 +661,26 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
             updatedData.sections[sectionIndex].keys[keyIndex] = toSet;
             return updatedData;
         });
-        try {
-            const keyId = config[sectionName as keyof typeof config][keyIndex].id;
-            await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet}`, 50);
-            const response = await serial.sendCommand(`GET_CONFIG ${sectionName} ${keyId}`, 50);
-            const newc = JSON.parse(response)?.key;
-            if ((!newc || newc !== toSet) && toSetNum !== 0) {
-                console.warn(`Value read back was ${newc}, should have been ${toSet}`);
-                throw new Error('Failed to verify config change');
-            }
-        } catch (error) {
-            if (error instanceof Error) {
-                setSerialStatus(`Failed to set new config value: ${error.message}`);
-            }
-        }
-    };
 
-    const handleSetConfig = async () => {
-        try {
-            await serial.sendCommand('SET_CONFIG', 400);
-            if (JSON.stringify(JSON.parse(await serial.sendCommand('GET_CONFIG'))) !== JSON.stringify(data)) {
-                console.error('Failed to verify config save');
-                throw new Error('Failed to verify config save');
+        if (write) {
+            try {
+                const keyId = config[sectionName as keyof typeof config][keyIndex].id;
+                await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet}`, 50);
+                const response = await serial.sendCommand(`GET_CONFIG ${sectionName} ${keyId}`, 50);
+                const newc = JSON.parse(response)?.key;
+                if ((!newc || newc !== toSet) && toSetNum !== 0) {
+                    console.warn(`Value read back was ${newc}, should have been ${toSet}`);
+                    throw new Error('Failed to verify config change');
+                }
+            } catch (error) {
+                if (error instanceof Error) {
+                    setSerialStatus(`Failed to set new config value: ${error.message}`);
+                }
             }
-        } catch (error) {
-            if (error instanceof Error) {
-                setSerialStatus(`Failed to save config: ${error.message}`);
+            if (autosave) {
+                handleSetConfig();
+            } else {
+                setUnsavedChanges(true);
             }
         }
     };
@@ -668,6 +688,10 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
     useEffect(() => {
         getConfigData();
     }, []);
+    unstable_usePrompt({
+        when: unsavedChanges,
+        message: 'You have unsaved changes to your config, are you sure you want to leave?',
+    });
     return data ? (
         <div className="divide-y divide-white/5">
             {data.sections.map((section, sectionIndex) => (
@@ -696,6 +720,16 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                                             sectionIndex,
                                                             keyIndex,
                                                             e.target.value,
+                                                            false,
+                                                        )
+                                                    }
+                                                    onBlur={e =>
+                                                        handleConfigChange(
+                                                            section.name,
+                                                            sectionIndex,
+                                                            keyIndex,
+                                                            e.target.value,
+                                                            true,
                                                         )
                                                     }
                                                 >
@@ -719,6 +753,16 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                                             sectionIndex,
                                                             keyIndex,
                                                             e.target.value,
+                                                            false,
+                                                        )
+                                                    }
+                                                    onBlur={e =>
+                                                        handleConfigChange(
+                                                            section.name,
+                                                            sectionIndex,
+                                                            keyIndex,
+                                                            e.target.value,
+                                                            true,
                                                         )
                                                     }
                                                 />
@@ -730,16 +774,18 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                     </ul>
                 </div>
             ))}
-            <div className="mt-4">
-                <button
-                    onClick={() => {
-                        handleSetConfig();
-                    }}
-                    className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-md hover:shadow-lg"
-                >
-                    Save config
-                </button>
-            </div>
+            {!autosave && (
+                <div>
+                    <button
+                        onClick={() => {
+                            handleSetConfig();
+                        }}
+                        className="mt-6 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-md hover:shadow-lg"
+                    >
+                        Save config
+                    </button>
+                </div>
+            )}
         </div>
     ) : (
         <div className="relative w-full">
