@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ChevronDoubleDownIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/solid';
 import SerialManager from '../../helpers/serialManager';
 import Settings from '../../helpers/settings';
 import { unstable_usePrompt } from 'react-router-dom';
@@ -377,7 +378,7 @@ const config: Config = {
         {
             name: 'IMU Model',
             id: 'imuModel',
-            desc: 'The model of the IMU that is being used.',
+            desc: "The model of the IMU that is being used. Please let us know if there's an IMU you would like supported!",
             enumMap: {
                 0: 'Unknown',
                 1: 'BNO055',
@@ -394,12 +395,12 @@ const config: Config = {
             desc: "The SCL pin on the IMU. Note that this must line up with the Pico's I2C0 interface, see a pinout if you're not sure!",
         },
         {
-            name: 'GPS Enabled',
-            id: 'gpsEnabled',
-            desc: 'Whether or not to enable the GPS. There are no module types, almost all GPS modules use the NMEA-0183 standard so that is what is supported here.',
+            name: 'Barometer Model',
+            id: 'baroModel',
+            desc: "The model of the barometer that is being used, if applicable. Can also be used to disable the barometer, which is the case by default. Please let us know if there's a barometer you would like supported!",
             enumMap: {
-                0: 'Disabled',
-                1: 'Enabled',
+                0: 'Barometer Disabled',
+                1: 'DPS310',
             },
         },
         {
@@ -410,21 +411,21 @@ const config: Config = {
         {
             name: 'GPS Command Type',
             id: 'gpsCommandType',
-            desc: "The command type of the GPS. Please let me know if there's a command type you would like supported! MTK appears to be the most common.",
+            desc: "The command type of the GPS, if applicable. Can also be used to disable the GPS. Please let us know if there's a command type you would like supported!",
             enumMap: {
-                0: 'Unknown',
+                0: 'GPS Disabled',
                 1: 'MTK',
             },
         },
         {
             name: 'GPS TX Pin',
             id: 'gpsTx',
-            desc: 'The TX pin of the GPS.',
+            desc: "The TX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
         },
         {
             name: 'GPS RX Pin',
             id: 'gpsRx',
-            desc: 'The RX pin of the GPS.',
+            desc: "The RX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
         },
     ],
 
@@ -602,6 +603,9 @@ const config: Config = {
 function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
     const [data, setData] = useState<ConfigData | null>(null);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const [sectionVisibility, setSectionVisibility] = useState<boolean[]>(
+        data ? new Array(data.sections.length).fill(false) : [],
+    );
 
     const autosave = Settings.get(Settings.setting.configAutoSave.name) === '1';
 
@@ -609,6 +613,17 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         setSerialStatus('No serial port available.');
         return;
     }
+
+    const toggleSection = (sectionIndex: number) => {
+        const newSectionVisibility = [...sectionVisibility];
+        newSectionVisibility[sectionIndex] = !newSectionVisibility[sectionIndex];
+        setSectionVisibility(newSectionVisibility);
+    };
+
+    const toHumanReadable = (sectionName: string) => {
+        const noNum = sectionName.replace(/\d*$/, ''); // Remove trailing numbers
+        return noNum.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // Remove camelCase
+    };
 
     const getConfigData = async () => {
         try {
@@ -665,7 +680,12 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         if (write) {
             try {
                 const keyId = config[sectionName as keyof typeof config][keyIndex].id;
-                await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet}`, 50);
+                if (autosave) {
+                    await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet} -S`, 200);
+                } else {
+                    await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet} -S`, 50);
+                    setUnsavedChanges(true);
+                }
                 const response = await serial.sendCommand(`GET_CONFIG ${sectionName} ${keyId}`, 50);
                 const newc = JSON.parse(response)?.key;
                 if ((!newc || newc !== toSet) && toSetNum !== 0) {
@@ -676,11 +696,6 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                 if (error instanceof Error) {
                     setSerialStatus(`Failed to set new config value: ${error.message}`);
                 }
-            }
-            if (autosave) {
-                handleSetConfig();
-            } else {
-                setUnsavedChanges(true);
             }
         }
     };
@@ -696,82 +711,94 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         <div className="divide-y divide-white/5">
             {data.sections.map((section, sectionIndex) => (
                 <div key={sectionIndex} className="py-6">
-                    <h3 className="text-xl font-bold leading-6 text-sky-500">{section.name}</h3>
-                    <ul className="mt-4 space-y-4">
-                        {section.keys.map(
-                            (value, keyIndex) =>
-                                value !== null && (
-                                    <li key={keyIndex} className="bg-gray-800 p-4 rounded-md shadow-md">
-                                        <div className="text-xl font-semibold text-white">
-                                            {config[section.name as keyof typeof config][keyIndex].name}
-                                        </div>
-                                        <div className="text-xs text-gray-400 mt-2">
-                                            {config[section.name as keyof typeof config][keyIndex].desc}
-                                        </div>
-                                        <div className="mt-2">
-                                            {config[section.name as keyof typeof config][keyIndex].enumMap ? (
-                                                // Dropdown for enums
-                                                <select
-                                                    className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
-                                                    value={value.toString()}
-                                                    onChange={e =>
-                                                        handleConfigChange(
-                                                            section.name,
-                                                            sectionIndex,
-                                                            keyIndex,
-                                                            e.target.value,
-                                                            false,
-                                                        )
-                                                    }
-                                                    onBlur={e =>
-                                                        handleConfigChange(
-                                                            section.name,
-                                                            sectionIndex,
-                                                            keyIndex,
-                                                            e.target.value,
-                                                            true,
-                                                        )
-                                                    }
-                                                >
-                                                    {Object.entries(
-                                                        config[section.name as keyof typeof config][keyIndex].enumMap!,
-                                                    ).map(([enumKey, enumValue]) => (
-                                                        <option key={enumKey} value={enumKey}>
-                                                            {enumValue}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                // Input for strings and numerical values
-                                                <input
-                                                    type="text"
-                                                    className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
-                                                    value={value.toString()}
-                                                    onChange={e =>
-                                                        handleConfigChange(
-                                                            section.name,
-                                                            sectionIndex,
-                                                            keyIndex,
-                                                            e.target.value,
-                                                            false,
-                                                        )
-                                                    }
-                                                    onBlur={e =>
-                                                        handleConfigChange(
-                                                            section.name,
-                                                            sectionIndex,
-                                                            keyIndex,
-                                                            e.target.value,
-                                                            true,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </div>
-                                    </li>
-                                ),
-                        )}
-                    </ul>
+                    <div className="flex items-center w-full text-left">
+                        <button className="mr-2 focus:outline-none" onClick={() => toggleSection(sectionIndex)}>
+                            {sectionVisibility[sectionIndex] ? (
+                                <ChevronDoubleDownIcon className={'h-5 w-5 text-sky-500'} aria-hidden="true" />
+                            ) : (
+                                <ChevronDoubleRightIcon className={'h-5 w-5 text-sky-500'} aria-hidden="true" />
+                            )}
+                        </button>
+                        <h3 className="text-xl font-bold leading-6 text-sky-500">{toHumanReadable(section.name)}</h3>
+                    </div>
+                    {sectionVisibility[sectionIndex] && (
+                        <ul className="mt-4 space-y-4">
+                            {section.keys.map(
+                                (value, keyIndex) =>
+                                    value !== null && (
+                                        <li key={keyIndex} className="bg-gray-800 p-4 rounded-md shadow-md">
+                                            <div className="text-xl font-semibold text-white">
+                                                {config[section.name as keyof typeof config][keyIndex].name}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-2">
+                                                {config[section.name as keyof typeof config][keyIndex].desc}
+                                            </div>
+                                            <div className="mt-2">
+                                                {config[section.name as keyof typeof config][keyIndex].enumMap ? (
+                                                    // Dropdown for enums
+                                                    <select
+                                                        className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
+                                                        value={value.toString()}
+                                                        onChange={e =>
+                                                            handleConfigChange(
+                                                                section.name,
+                                                                sectionIndex,
+                                                                keyIndex,
+                                                                e.target.value,
+                                                                false,
+                                                            )
+                                                        }
+                                                        onBlur={e =>
+                                                            handleConfigChange(
+                                                                section.name,
+                                                                sectionIndex,
+                                                                keyIndex,
+                                                                e.target.value,
+                                                                true,
+                                                            )
+                                                        }
+                                                    >
+                                                        {Object.entries(
+                                                            config[section.name as keyof typeof config][keyIndex]
+                                                                .enumMap!,
+                                                        ).map(([enumKey, enumValue]) => (
+                                                            <option key={enumKey} value={enumKey}>
+                                                                {enumValue}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    // Input for strings and numerical values
+                                                    <input
+                                                        type="text"
+                                                        className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
+                                                        value={value.toString()}
+                                                        onChange={e =>
+                                                            handleConfigChange(
+                                                                section.name,
+                                                                sectionIndex,
+                                                                keyIndex,
+                                                                e.target.value,
+                                                                false,
+                                                            )
+                                                        }
+                                                        onBlur={e =>
+                                                            handleConfigChange(
+                                                                section.name,
+                                                                sectionIndex,
+                                                                keyIndex,
+                                                                e.target.value,
+                                                                true,
+                                                            )
+                                                        }
+                                                    />
+                                                )}
+                                            </div>
+                                        </li>
+                                    ),
+                            )}
+                        </ul>
+                    )}
                 </div>
             ))}
             {!autosave && (

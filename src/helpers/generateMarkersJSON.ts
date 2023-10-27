@@ -1,5 +1,5 @@
 import { Marker } from '../tools/MapElement';
-import settings from '../helpers/settings';
+import Settings from '../helpers/settings';
 
 const url = 'http://193.243.190.83/'; // DNS lookup is currently broken for some reason
 
@@ -28,7 +28,8 @@ async function toMSL(locations: number[][]): Promise<number[]> {
 
 export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> => {
     try {
-        const gpsSamples = Number(settings.get(settings.setting.gpsNumOffsetSamples.name));
+        const gpsSamples = Number(Settings.get(Settings.setting.gpsNumOffsetSamples.name));
+        const dropSecs = Number(Settings.get(Settings.setting.dropSecsRelease.name));
 
         if (gpsSamples === 0) {
             const toFetch = markers.filter(
@@ -67,15 +68,22 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
                 cachedAltitudes[marker.id] = 0;
             });
         } else {
-            throw new Error('Invalid GPS number of offset samples');
+            throw new Error('Invalid number of GPS offset samples');
         }
 
         const waypoints = markers.map(marker => {
+            if (marker.position.lat <= -90 || marker.position.lat >= 90) {
+                throw new Error('Invalid latitude');
+            }
+            if (marker.position.lng <= -180 || marker.position.lng > 180) {
+                throw new Error('Invalid longitude');
+            }
             return {
                 lat: marker.position.lat,
                 lng: marker.position.lng,
                 // Preserve hold, otherwise final alt (MSL) = AGL + calculated MSL at point
                 alt: marker.alt >= 0 ? cachedAltitudes[marker.id] + marker.alt : marker.alt,
+                drop: marker.drop ? dropSecs : 0,
             };
         });
 

@@ -13,7 +13,7 @@ interface ClickableProps {
 function Clickable({ link, external, children }: ClickableProps) {
     if (external) {
         return (
-            <a href={link} target="_blank" rel="noopener noreferrer">
+            <a href={link} rel="noopener noreferrer">
                 {children}
             </a>
         );

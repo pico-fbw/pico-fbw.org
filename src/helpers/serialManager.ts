@@ -115,7 +115,7 @@ export default class SerialManager {
             // We want to filter out the status response if it's there but we also don't want to ignore it
             const match = response.match(/\npico-fbw (\d+)/);
             if (match) {
-                const code = parseInt(match[1]);
+                const code = Number(match[1]);
                 if (code !== 200) {
                     throw new Error(`Command failed with code ${code}`);
                 }

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
@@ -12,7 +12,9 @@ import {
     Square3Stack3DIcon,
 } from '@heroicons/react/24/outline';
 import calculateDistance from '../helpers/calculateDistance';
+import classNames from '../helpers/classNames';
 import generateMarkersJSON from '../helpers/generateMarkersJSON';
+import Settings from '../helpers/settings';
 import Alert from '../elements/Alert';
 import { NavLink } from 'react-router-dom';
 
@@ -28,6 +30,13 @@ function MapClickHandler({ onClick }: { onClick: (e: LeafletMouseEvent) => void 
 
 const layers = [
     {
+        id: 0,
+        name: 'Google Satellite',
+        attribution: 'Imagery &copy; Google Satellite Imagery Sources',
+        link: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        icon: GlobeAmericasIcon,
+    },
+    {
         id: 1,
         name: 'Google Hybrid',
         attribution: 'Imagery &copy; Google Satellite Imagery Sources, Map data &copy; 2023 Google',
@@ -36,20 +45,13 @@ const layers = [
     },
     {
         id: 2,
-        name: 'Google Satellite',
-        attribution: 'Imagery &copy; Google Satellite Imagery Sources, Map data &copy; 2023',
-        link: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-        icon: GlobeAmericasIcon,
-    },
-    {
-        id: 3,
         name: 'Google Map',
         attribution: 'Map data &copy; 2023 Google',
         link: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
         icon: MapIcon,
     },
     {
-        id: 4,
+        id: 3,
         name: 'OpenStreetMap',
         attribution:
             'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> and contributors',
@@ -62,6 +64,7 @@ export interface Marker {
     id: number;
     position: LatLng;
     alt: number;
+    drop: boolean;
 }
 
 function MapElement() {
@@ -97,14 +100,11 @@ function MapElement() {
             id: markers.length + 1,
             position: latlng,
             alt: defaultAlt,
+            drop: false,
         };
         updateMarkers([...markers, newMarker]);
         setPolyline([...polyline, latlng]);
     };
-
-    function classNames(...classes: string[]) {
-        return classes.filter(Boolean).join(' ');
-    }
 
     const handleMarkerDragEnd = (id: number, e: DragEndEvent) => {
         const updatedMarkers = markers.map(marker => {
@@ -142,7 +142,7 @@ function MapElement() {
         setEditID(id);
     };
 
-    const getPositionById = (id: number): { position: LatLng; alt: number } => {
+    const getPositionById = (id: number): { position: LatLng; alt: number; drop: boolean } => {
         const marker = markers.find(marker => marker.id === id);
 
         let latitude = 0,
@@ -155,17 +155,18 @@ function MapElement() {
         }
 
         return marker
-            ? { position: { lat: latitude, lng: longitude } as LatLng, alt: altitude }
-            : { position: { lat: 0, lng: 0 } as LatLng, alt: 0 };
+            ? { position: { lat: latitude, lng: longitude } as LatLng, alt: altitude, drop: marker.drop }
+            : { position: { lat: 0, lng: 0 } as LatLng, alt: 0, drop: false };
     };
 
-    const setMarkerPosition = (id: number, lat: number, lng: number, alt: number): void => {
+    const setMarkerPosition = (id: number, lat: number, lng: number, alt: number, drop: boolean): void => {
         const updatedMarkers = markers.map(marker => {
             if (marker.id === id) {
                 return {
                     ...marker,
                     position: { lat, lng } as LatLng,
                     alt: alt,
+                    drop: drop,
                 };
             }
             return marker;
@@ -177,6 +178,11 @@ function MapElement() {
     const copyJson = () => {
         navigator.clipboard.writeText(fplanJson);
     };
+
+    useEffect(() => {
+        const index = parseInt(Settings.get(Settings.setting.plannerMap.name));
+        setMapLink(layers[index].link);
+    }, []);
 
     return (
         <div className={'w-full h-full bg-gray-900 relative'}>
@@ -243,6 +249,7 @@ function MapElement() {
                                     id: markers.length + 1,
                                     position: map.getCenter(),
                                     alt: defaultAlt,
+                                    drop: false,
                                 };
                                 updateMarkers([...markers, newMarker]);
                                 setPolyline([...polyline, map.getCenter()]);
@@ -274,6 +281,10 @@ function MapElement() {
                                                         onClick={() => {
                                                             setMapLink(layer.link);
                                                             setMapAttribution(layer.attribution);
+                                                            Settings.set(
+                                                                Settings.setting.plannerMap.name,
+                                                                layer.id.toString(),
+                                                            );
                                                         }}
                                                         className={classNames(
                                                             active || mapLink === layer.link
@@ -357,13 +368,13 @@ function MapElement() {
                                                         newLat,
                                                         getPositionById(editID ? editID : -1).position.lng,
                                                         getPositionById(editID ? editID : -1).alt,
+                                                        getPositionById(editID ? editID : -1).drop,
                                                     );
                                                 }
                                             }}
                                         />
                                     </div>
                                 </div>
-
                                 <div className="sm:col-span-3">
                                     <label
                                         htmlFor="longitude"
@@ -387,13 +398,14 @@ function MapElement() {
                                                         getPositionById(editID ? editID : -1).position.lat,
                                                         newLng,
                                                         getPositionById(editID ? editID : -1).alt,
+                                                        getPositionById(editID ? editID : -1).drop,
                                                     );
                                                 }
                                             }}
                                         />
                                     </div>
                                 </div>
-                                <div className="sm:col-span-3">
+                                <div className="sm:col-span-2">
                                     <label
                                         htmlFor="altitude"
                                         className="block text-sm font-medium leading-6 text-white"
@@ -418,8 +430,32 @@ function MapElement() {
                                                         getPositionById(editID ? editID : -1).position.lat,
                                                         getPositionById(editID ? editID : -1).position.lng,
                                                         newAlt,
+                                                        getPositionById(editID ? editID : -1).drop,
                                                     );
                                                 }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="sm:col-span-1">
+                                    <label htmlFor="drop" className="block text-sm font-medium leading-6 text-white">
+                                        Drop
+                                    </label>
+                                    <div className="ml-2 mt-3">
+                                        <input
+                                            type="checkbox"
+                                            name="drop"
+                                            id="drop"
+                                            className="h-5 w-5 cursor-pointer appearance-none rounded-md border transition-all checked:border-indigo-500 checked:bg-indigo-500 checked:before:bg-indigo-500"
+                                            checked={getPositionById(editID ? editID : -1).drop}
+                                            onChange={e => {
+                                                setMarkerPosition(
+                                                    editID ? editID : -1,
+                                                    getPositionById(editID ? editID : -1).position.lat,
+                                                    getPositionById(editID ? editID : -1).position.lng,
+                                                    getPositionById(editID ? editID : -1).alt,
+                                                    e.target.checked,
+                                                );
                                             }}
                                         />
                                     </div>
@@ -564,7 +600,8 @@ function MapElement() {
                                                             return (
                                                                 <tr key={marker.id}>
                                                                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                                                                        {marker.id}
+                                                                        <>{marker.id}</>
+                                                                        {marker.drop && <i> (drop)</i>}
                                                                     </td>
                                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                                         <div className="hidden md:block">
@@ -621,6 +658,7 @@ function MapElement() {
                                                             <tr key={marker.id}>
                                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
                                                                     {marker.id}
+                                                                    {marker.drop && <i> (drop)</i>}
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                                     <div className="hidden md:block">
