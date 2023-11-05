@@ -1,8 +1,8 @@
 export default class Settings {
     static setting = {
         gpsNumOffsetSamples: { name: 'gpsNumOffsetSamples', defaultValue: '0' },
-        dropSecsRelease: { name: 'dropSecsRelease', defaultValue: '5' },
-        configAutoSave: { name: 'configAutoSave', defaultValue: '0' },
+        dropSecsRelease: { name: 'dropSecsRelease', defaultValue: '10' },
+        configAutoSave: { name: 'configAutoSave', defaultValue: '1' },
         plannerMap: { name: 'plannerMap', defaultValue: '0' },
         plannerOnboarded: { name: 'plannerOnboarded', defaultValue: '0' },
         configOnboarded: { name: 'configOnboarded', defaultValue: '0' },

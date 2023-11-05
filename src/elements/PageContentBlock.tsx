@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import React, { useEffect } from 'react';
-import Sidebar from './Sidebar';
+import Sidebar from './tools/Sidebar';
 
 export interface PageContentBlockProps {
     title?: string;

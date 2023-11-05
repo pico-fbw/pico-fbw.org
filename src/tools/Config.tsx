@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import SerialManager from '../helpers/serialManager';
 import Alert from '../elements/Alert';
 import ConfigViewer from '../elements/tools/ConfigViewer';
-import PageContentBlock from '../elements/tools/PageContentBlock';
+import PageContentBlock from '../elements/PageContentBlock';
 
 // TODO: setting for first-time onboarding to config editor with guided setup (and possibly replicate for flight planenr as well)
 

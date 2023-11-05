@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PageContentBlock from '../elements/tools/PageContentBlock';
+import PageContentBlock from '../elements/PageContentBlock';
 import Settings from '../helpers/settings';
 
 export default function Setting() {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Transition } from '@headlessui/react';
 import Navigation from '../elements/Navigation';
-import PageContentBlock from '../elements/tools/PageContentBlock';
+import PageContentBlock from '../elements/PageContentBlock';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { NavLink } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import Navigation from './elements/Navigation';
-import PageContentBlock from './elements/tools/PageContentBlock';
+import PageContentBlock from './elements/PageContentBlock';
 
 export default function About() {
     return (

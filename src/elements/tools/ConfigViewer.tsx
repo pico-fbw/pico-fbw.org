@@ -22,66 +22,49 @@ interface Config {
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
     Control: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
-    Limits: {
+    Pins: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
-    }[];
-    FlyingWing: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-    }[];
-    Pins0: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-    }[];
-    Pins1: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
     Sensors: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
-    PID0: {
+    WiFly: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
-    PID1: {
+    System: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
+        readOnly?: boolean;
     }[];
-    Debug: {
+    PID: {
         name: string;
         id: string;
         desc: string;
         enumMap?: { [key: number]: string };
-    }[];
-    Wifly: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: undefined;
+        readOnly?: boolean;
     }[];
 }
 
@@ -188,9 +171,6 @@ const config: Config = {
             id: 'throttleMaxTime',
             desc: 'The maximum time in seconds that the throttle can be held at `Throttle MAX` before `Throttle MCT` must be set.',
         },
-    ],
-
-    Limits: [
         {
             name: 'Roll Limit',
             id: 'rollLimit',
@@ -202,14 +182,14 @@ const config: Config = {
             desc: 'The maximum roll angle that the system will allow, nothing higher is allowed.',
         },
         {
-            name: 'Pitch Upper Limit',
-            id: 'pitchUpperLimit',
-            desc: 'The maximum pitch angle that the system will hold and stabilize, nothing higher is allowed.',
-        },
-        {
             name: 'Pitch Lower Limit',
             id: 'pitchLowerLimit',
             desc: 'The minimum pitch angle that the system will hold and stabilize, nothing lower is allowed. This value DOES need to be negative!',
+        },
+        {
+            name: 'Pitch Upper Limit',
+            id: 'pitchUpperLimit',
+            desc: 'The maximum pitch angle that the system will hold and stabilize, nothing higher is allowed.',
         },
         {
             name: 'Max Aileron Deflection',
@@ -231,9 +211,6 @@ const config: Config = {
             id: 'maxElevonDeflection',
             desc: 'The maximum degree value the system is allowed to move the elevon servos to, if in the `Flying Wing` control mode.',
         },
-    ],
-
-    FlyingWing: [
         {
             name: 'Elevon Mixing Gain',
             id: 'elevonMixingGain',
@@ -249,34 +226,9 @@ const config: Config = {
             id: 'elevMixingBias',
             desc: 'The bias of the elevator input in elevon mixing.',
         },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
     ],
 
-    Pins0: [
+    Pins: [
         {
             name: 'Aileron Input',
             id: 'inputAil',
@@ -308,19 +260,6 @@ const config: Config = {
             desc: 'Pin that the PWM wire on the RUDDER servo is connected to.',
         },
         {
-            name: 'Switch Input',
-            id: 'inputSwitch',
-            desc: 'Pin that the PWM signal wire from the receiver SWITCH channel is connected to.',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-    ],
-
-    Pins1: [
-        {
             name: 'Throttle Input',
             id: 'inputThrottle',
             desc: 'Pin that the PWM signal wire from the receiver THROTTLE channel is connected to.',
@@ -331,6 +270,11 @@ const config: Config = {
             desc: 'Pin that the PWM wire on the THROTTLE ESC is connected to.',
         },
         {
+            name: 'Switch Input',
+            id: 'inputSwitch',
+            desc: 'Pin that the PWM signal wire from the receiver SWITCH channel is connected to.',
+        },
+        {
             name: 'Elevon Left Servo',
             id: 'servoElevonL',
             desc: 'Pin that the PWM wire on the ELEVON LEFT servo is connected to.',
@@ -339,6 +283,26 @@ const config: Config = {
             name: 'Elevon Right Servo',
             id: 'servoElevonR',
             desc: 'Pin that the PWM wire on the ELEVON RIGHT servo is connected to.',
+        },
+        {
+            name: 'AAHRS SDA Pin',
+            id: 'aahrsSda',
+            desc: "The SDA pin of the AAHRS system (IMU + Baro). Note that this must line up with the Pico's I2C0 interface, see a pinout if you're not sure!",
+        },
+        {
+            name: 'AAHRS SCL Pin',
+            id: 'aahrsScl',
+            desc: "The SCL pin of the AAHRS system (IMU + Baro). Note that this must line up with the Pico's I2C0 interface, see a pinout if you're not sure!",
+        },
+        {
+            name: 'GPS TX Pin',
+            id: 'gpsTx',
+            desc: "The TX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
+        },
+        {
+            name: 'GPS RX Pin',
+            id: 'gpsRx',
+            desc: "The RX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
         },
         {
             name: 'Reverse Roll',
@@ -367,11 +331,6 @@ const config: Config = {
                 1: 'Reversed',
             },
         },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
     ],
 
     Sensors: [
@@ -385,16 +344,6 @@ const config: Config = {
             },
         },
         {
-            name: 'IMU SDA Pin',
-            id: 'imuSda',
-            desc: "The SDA pin on the IMU. Note that this must line up with the Pico's I2C0 interface, see a pinout if you're not sure!",
-        },
-        {
-            name: 'IMU SCL Pin',
-            id: 'imuScl',
-            desc: "The SCL pin on the IMU. Note that this must line up with the Pico's I2C0 interface, see a pinout if you're not sure!",
-        },
-        {
             name: 'Barometer Model',
             id: 'baroModel',
             desc: "The model of the barometer that is being used, if applicable. Can also be used to disable the barometer, which is the case by default. Please let us know if there's a barometer you would like supported!",
@@ -402,11 +351,6 @@ const config: Config = {
                 0: 'Barometer Disabled',
                 1: 'DPS310',
             },
-        },
-        {
-            name: 'GPS Baudrate',
-            id: 'gpsBaudrate',
-            desc: 'The baudrate of the GPS. Almost all GPS modules use either 4600 or 9600 baud rates with 9600 being more common. Check the documentation of your GPS module and find its baudrate if you are experiencing communication issues.',
         },
         {
             name: 'GPS Command Type',
@@ -418,112 +362,35 @@ const config: Config = {
             },
         },
         {
-            name: 'GPS TX Pin',
-            id: 'gpsTx',
-            desc: "The TX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
-        },
-        {
-            name: 'GPS RX Pin',
-            id: 'gpsRx',
-            desc: "The RX pin of the GPS. Note that this must line up with the Pico's UART1 interface, see a pinout if you're not sure!",
+            name: 'GPS Baudrate',
+            id: 'gpsBaudrate',
+            desc: 'The baudrate of the GPS. Almost all GPS modules use either 4600 or 9600 baud rates with 9600 being more common. Check the documentation of your GPS module and find its baudrate if you are experiencing communication issues.',
         },
     ],
 
-    PID0: [
+    WiFly: [
         {
-            name: 'Roll Tau',
-            id: 'rollTau',
-            desc: '',
+            name: 'Network Name',
+            id: 'ssid',
+            desc: 'The name of the wireless network that Wi-Fly creates.',
         },
         {
-            name: 'Roll Integrator Minimum',
-            id: 'rollIntegMin',
-            desc: '',
-        },
-        {
-            name: 'Roll Integrator Maximum',
-            id: 'rollIntegMax',
-            desc: '',
-        },
-        {
-            name: 'Roll kT',
-            id: 'rollKt',
-            desc: '',
-        },
-        {
-            name: 'Pitch Tau',
-            id: 'pitchTau',
-            desc: '',
-        },
-        {
-            name: 'Pitch Integrator Minimum',
-            id: 'pitchIntegMin',
-            desc: '',
-        },
-        {
-            name: 'Pitch Integrator Maximum',
-            id: 'pitchIntegMax',
-            desc: '',
-        },
-        {
-            name: 'Pitch kT',
-            id: 'pitchKt',
-            desc: '',
+            name: 'Network Password',
+            id: 'pass',
+            desc: 'The password for the wireless network that Wi-Fly creates. Must be at least eight characters long, and will only be used if `Wi-Fly Enabled` is set to `Enabled (with password)` in the `General` section.',
         },
     ],
 
-    PID1: [
-        {
-            name: 'Yaw kP',
-            id: 'yawKp',
-            desc: '',
-        },
-        {
-            name: 'Yaw kI',
-            id: 'yawKi',
-            desc: '',
-        },
-        {
-            name: 'Yaw kD',
-            id: 'yawKd',
-            desc: '',
-        },
-        {
-            name: 'Yaw Tau',
-            id: 'yawTau',
-            desc: '',
-        },
-        {
-            name: 'Yaw Integrator Minimum',
-            id: 'yawIntegMin',
-            desc: '',
-        },
-        {
-            name: 'Yaw Integrator Maximum',
-            id: 'yawIntegMax',
-            desc: '',
-        },
-        {
-            name: 'Yaw kT',
-            id: 'yawKt',
-            desc: '',
-        },
-        {
-            name: '',
-            id: '',
-            desc: '',
-        },
-    ],
-
-    Debug: [
+    System: [
         {
             name: 'Debug Enabled',
             id: 'debug',
-            desc: 'Whether the current firmware build is considered a debug build. This value may be modified, but will be reset upon the next reboot.',
+            desc: 'Whether the current firmware build is a debug build.',
             enumMap: {
                 0: 'Release',
                 1: 'Debug',
             },
+            readOnly: true,
         },
         {
             name: 'Debug: FBW',
@@ -581,21 +448,125 @@ const config: Config = {
         },
         {
             name: 'Watchdog Timeout',
-            id: 'watchdog_timeout_ms',
+            id: 'watchdogTimeout',
             desc: 'The maximum amount of time (in ms) that the system can run the main program loop without rebooting.',
         },
     ],
 
-    Wifly: [
+    PID: [
         {
-            name: 'Network Name',
-            id: 'ssid',
-            desc: 'The name of the wireless network that Wi-Fly creates.',
+            name: 'PID Tune Status',
+            id: 'tuneStatus',
+            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning is complete, but if you prefer to manually set parameters, then set this to Tuned.',
+            enumMap: {
+                0: 'Not Tuned',
+                1: 'Tuned',
+            },
         },
         {
-            name: 'Network Password',
-            id: 'pass',
-            desc: 'The password for the wireless network that Wi-Fly creates. Must be at least eight characters long, and will only be used if `Wi-Fly Enabled` is set to `Enabled (with password)` in the `General` section.',
+            name: 'Roll kP',
+            id: 'roll_kp',
+            desc: '',
+        },
+        {
+            name: 'Roll ti',
+            id: 'roll_ti',
+            desc: '',
+        },
+        {
+            name: 'Roll tD',
+            id: 'roll_td',
+            desc: '',
+        },
+        {
+            name: 'Roll kT',
+            id: 'roll_kt',
+            desc: '',
+        },
+        {
+            name: 'Roll Tau',
+            id: 'roll_tau',
+            desc: '',
+        },
+        {
+            name: 'Roll Integrator Minimum',
+            id: 'roll_integMin',
+            desc: '',
+        },
+        {
+            name: 'Roll Integrator Maximum',
+            id: 'roll_integMax',
+            desc: '',
+        },
+        {
+            name: 'Pitch kP',
+            id: 'roll_kp',
+            desc: '',
+        },
+        {
+            name: 'Pitch ti',
+            id: 'pitch_ti',
+            desc: '',
+        },
+        {
+            name: 'Pitch tD',
+            id: 'pitch_td',
+            desc: '',
+        },
+        {
+            name: 'Pitch kT',
+            id: 'pitch_kt',
+            desc: '',
+        },
+        {
+            name: 'Pitch Tau',
+            id: 'pitch_tau',
+            desc: '',
+        },
+        {
+            name: 'Pitch Integrator Minimum',
+            id: 'pitch_integMin',
+            desc: '',
+        },
+        {
+            name: 'Pitch Integrator Maximum',
+            id: 'pitch_integMax',
+            desc: '',
+        },
+        {
+            name: 'Yaw kP',
+            id: 'yaw_kp',
+            desc: '',
+        },
+        {
+            name: 'Yaw ti',
+            id: 'yaw_ti',
+            desc: '',
+        },
+        {
+            name: 'Yaw tD',
+            id: 'yaw_td',
+            desc: '',
+        },
+        {
+            name: 'Yaw kT',
+            id: 'yaw_kt',
+            desc: '',
+        },
+        {
+            name: 'Yaw Tau',
+            id: 'yaw_tau',
+            desc: '',
+        },
+        {
+            name: 'Yaw Integrator Minimum',
+            id: 'yaw_integMin',
+            desc: '',
+        },
+        {
+            name: 'Yaw Integrator Maximum',
+            id: 'yaw_integMax',
+            desc: '',
         },
     ],
 };
@@ -618,11 +589,6 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         const newSectionVisibility = [...sectionVisibility];
         newSectionVisibility[sectionIndex] = !newSectionVisibility[sectionIndex];
         setSectionVisibility(newSectionVisibility);
-    };
-
-    const toHumanReadable = (sectionName: string) => {
-        const noNum = sectionName.replace(/\d*$/, ''); // Remove trailing numbers
-        return noNum.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // Remove camelCase
     };
 
     const getConfigData = async () => {
@@ -719,7 +685,9 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                 <ChevronDoubleRightIcon className={'h-5 w-5 text-sky-500'} aria-hidden="true" />
                             )}
                         </button>
-                        <h3 className="text-xl font-bold leading-6 text-sky-500">{toHumanReadable(section.name)}</h3>
+                        <h3 className="text-xl font-bold leading-6 text-sky-500">
+                            {section.name === 'WiFly' ? 'Wi-Fly' : section.name}
+                        </h3>
                     </div>
                     {sectionVisibility[sectionIndex] && (
                         <ul className="mt-4 space-y-4">
@@ -738,6 +706,10 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                                     // Dropdown for enums
                                                     <select
                                                         className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"
+                                                        disabled={
+                                                            config[section.name as keyof typeof config][keyIndex]
+                                                                .readOnly
+                                                        }
                                                         value={value.toString()}
                                                         onChange={e =>
                                                             handleConfigChange(
