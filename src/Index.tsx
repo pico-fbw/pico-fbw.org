@@ -37,8 +37,8 @@ export default function Index() {
                                 >
                                     Get Started
                                 </NavLink>
-                                <NavLink to={'/planner'} className="text-sm font-semibold leading-6 text-white">
-                                    Flight Planner <span aria-hidden="true">→</span>
+                                <NavLink to={'/tools/planner'} className="text-sm font-semibold leading-6 text-white">
+                                    Tools <span aria-hidden="true">&rarr;</span>
                                 </NavLink>
                             </div>
                         </div>
