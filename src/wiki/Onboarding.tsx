@@ -91,11 +91,11 @@ export default function Onboarding() {
                             >
                                 <OptionCard
                                     bgColor="bg-blue-600"
-                                    imageSrc="../../temp.png"
+                                    imageSrc="../../prodstill.png"
                                     title="Buy pico-fbw"
-                                    link={'https://shop.pico-fbw.com'}
+                                    link={'https://pico-fbw.com/products'}
                                     external
-                                    description="Purchase our custom-built, pre-configured boards"
+                                    description="Purchase our custom-built, ready-to-go boards"
                                 />
                             </Transition.Child>
 
@@ -112,7 +112,8 @@ export default function Onboarding() {
                                     bgColor="bg-white/5"
                                     imageSrc="../../icon.svg"
                                     title="Make it yourself"
-                                    link={'/wiki'}
+                                    link={'https://github.com/pico-fbw/pico-fbw/wiki'}
+                                    external
                                     description="Build and install pico-fbw on your own Raspberry Pi Pico"
                                 />
                             </Transition.Child>

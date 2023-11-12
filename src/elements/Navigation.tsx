@@ -11,7 +11,7 @@ const Navigation: React.FC<NavigationProps> = ({ hideLinks }) => {
     const navigation = [
         { name: 'Home', to: '/' },
         { name: 'Tools', to: '/tools/planner' },
-        { name: 'Wiki', to: '/wiki' },
+        { name: 'Wiki', to: 'https://github.com/pico-fbw/pico-fbw/wiki', external: true },
         { name: 'About', to: '/about' },
     ];
 
@@ -82,15 +82,26 @@ const Navigation: React.FC<NavigationProps> = ({ hideLinks }) => {
                 <div className="hidden lg:flex lg:gap-x-12 h-6">
                     {!hideLinks && (
                         <>
-                            {navigation.map(item => (
-                                <NavLink
-                                    key={item.name}
-                                    to={item.to}
-                                    className="text-sm font-semibold leading-6 text-white"
-                                >
-                                    {item.name}
-                                </NavLink>
-                            ))}
+                            {navigation.map(item =>
+                                item.external ? (
+                                    <a
+                                        key={item.name}
+                                        href={item.to}
+                                        className="text-sm font-semibold leading-6 text-white"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.name}
+                                    </a>
+                                ) : (
+                                    <NavLink
+                                        key={item.name}
+                                        to={item.to}
+                                        className="text-sm font-semibold leading-6 text-white"
+                                    >
+                                        {item.name}
+                                    </NavLink>
+                                ),
+                            )}
                         </>
                     )}
                 </div>
@@ -98,10 +109,7 @@ const Navigation: React.FC<NavigationProps> = ({ hideLinks }) => {
                     {!hideLinks && (
                         <>
                             {location.pathname === '/' && (
-                                <a
-                                    href={'https://shop.pico-fbw.com'}
-                                    className="text-sm font-semibold leading-6 text-white"
-                                >
+                                <a href={'https://pico-fbw.com'} className="text-sm font-semibold leading-6 text-white">
                                     Shop <span aria-hidden="true">&rarr;</span>
                                 </a>
                             )}

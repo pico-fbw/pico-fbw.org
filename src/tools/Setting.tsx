@@ -25,10 +25,11 @@ export default function Setting() {
                                 <b>- 0 (Default):</b> Altitude is pre-calculated based on a database (accuracy within
                                 100 feet, more applicable for hilly areas or high flying).
                                 <br />
-                                <b>- 1-100:</b> Use GPS altitude as an offset for more precise altitude control during
-                                flight (more applicable for flatter areas and lower flying).
+                                <b>- 1-100:</b> Uses GPS/barometric altitude as an offset for more precise altitude
+                                control during flight (more applicable for flatter areas and lower flying).
                                 <br /> <br />
-                                Note that higher values require additional time on GPS initialization.
+                                Note that higher values will require additional time before auto mode may be engaged,
+                                especially for GPS-based systems.
                             </p>
 
                             <div>

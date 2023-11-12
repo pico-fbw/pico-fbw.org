@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDoubleDownIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/solid';
+import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/solid';
 import SerialManager from '../../helpers/serialManager';
 import Settings from '../../helpers/settings';
 import { unstable_usePrompt } from 'react-router-dom';
@@ -172,6 +172,16 @@ const config: Config = {
             desc: 'The maximum time in seconds that the throttle can be held at `Throttle MAX` before `Throttle MCT` must be set.',
         },
         {
+            name: 'Drop Detent (Closed)',
+            id: 'dropDetentClosed',
+            desc: 'The value, in degrees (0-180), to set the drop servo to when closed.',
+        },
+        {
+            name: 'Drop Detent (Open)',
+            id: 'dropDetentOpen',
+            desc: 'The value, in degrees (0-180), to set the drop servo to when open.',
+        },
+        {
             name: 'Roll Limit',
             id: 'rollLimit',
             desc: 'The maximum roll angle that the system will attempt to stabilize; a constant input is required to keep a roll within this and `Roll Limit Hold`.',
@@ -232,57 +242,62 @@ const config: Config = {
         {
             name: 'Aileron Input',
             id: 'inputAil',
-            desc: 'Pin that the PWM signal wire from the receiver AILERON channel is connected to.',
+            desc: 'Pin that the PWM (signal) wire from the receiver AILERON channel is connected to.',
         },
         {
             name: 'Aileron Servo',
             id: 'servoAil',
-            desc: 'Pin that the PWM wire on the AILERON servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the AILERON servo is connected to.',
         },
         {
             name: 'Elevator Input',
             id: 'inputElev',
-            desc: 'Pin that the PWM signal wire from the receiver ELEVATOR channel is connected to.',
+            desc: 'Pin that the PWM (signal) wire from the receiver ELEVATOR channel is connected to.',
         },
         {
             name: 'Elevator Servo',
             id: 'servoElev',
-            desc: 'Pin that the PWM wire on the ELEVATOR servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the ELEVATOR servo is connected to.',
         },
         {
             name: 'Rudder Input',
             id: 'inputRud',
-            desc: 'Pin that the PWM signal wire from the receiver RUDDER channel is connected to.',
+            desc: 'Pin that the PWM (signal) wire from the receiver RUDDER channel is connected to.',
         },
         {
             name: 'Rudder Servo',
             id: 'servoRud',
-            desc: 'Pin that the PWM wire on the RUDDER servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the RUDDER servo is connected to.',
         },
         {
             name: 'Throttle Input',
             id: 'inputThrottle',
-            desc: 'Pin that the PWM signal wire from the receiver THROTTLE channel is connected to.',
+            desc: 'Pin that the PWM (signal) wire from the receiver THROTTLE channel is connected to.',
         },
         {
             name: 'Throttle ESC',
             id: 'escThrottle',
-            desc: 'Pin that the PWM wire on the THROTTLE ESC is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the THROTTLE ESC is connected to.',
         },
         {
             name: 'Switch Input',
             id: 'inputSwitch',
-            desc: 'Pin that the PWM signal wire from the receiver SWITCH channel is connected to.',
+            desc: 'Pin that the PWM (signal) wire from the receiver SWITCH channel is connected to.',
+        },
+        {
+            name: 'Drop Servo',
+            id: 'servoDrop',
+            desc: 'Pin that the PWM (signal) wire on the DROP servo is connected to.',
         },
         {
             name: 'Elevon Left Servo',
             id: 'servoElevonL',
-            desc: 'Pin that the PWM wire on the ELEVON LEFT servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the ELEVON LEFT servo is connected to.',
         },
         {
             name: 'Elevon Right Servo',
             id: 'servoElevonR',
-            desc: 'Pin that the PWM wire on the ELEVON RIGHT servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the ELEVON RIGHT servo is connected to.',
         },
         {
             name: 'AAHRS SDA Pin',
@@ -339,8 +354,8 @@ const config: Config = {
             id: 'imuModel',
             desc: "The model of the IMU that is being used. Please let us know if there's an IMU you would like supported!",
             enumMap: {
-                0: 'Unknown',
                 1: 'BNO055',
+                2: 'ICM20948',
             },
         },
         {
@@ -677,17 +692,20 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         <div className="divide-y divide-white/5">
             {data.sections.map((section, sectionIndex) => (
                 <div key={sectionIndex} className="py-6">
-                    <div className="flex items-center w-full text-left">
-                        <button className="mr-2 focus:outline-none" onClick={() => toggleSection(sectionIndex)}>
-                            {sectionVisibility[sectionIndex] ? (
-                                <ChevronDoubleDownIcon className={'h-5 w-5 text-sky-500'} aria-hidden="true" />
-                            ) : (
-                                <ChevronDoubleRightIcon className={'h-5 w-5 text-sky-500'} aria-hidden="true" />
-                            )}
-                        </button>
-                        <h3 className="text-xl font-bold leading-6 text-sky-500">
+                    <div
+                        className="flex w-full items-start justify-between text-left text-white"
+                        onClick={() => toggleSection(sectionIndex)}
+                    >
+                        <span className="text-base font-semibold leading-7">
                             {section.name === 'WiFly' ? 'Wi-Fly' : section.name}
-                        </h3>
+                        </span>
+                        <span className="ml-6 flex h-7 items-center, cursor-pointer">
+                            {sectionVisibility[sectionIndex] ? (
+                                <MinusSmallIcon className="h-6 w-6" aria-hidden="true" />
+                            ) : (
+                                <PlusSmallIcon className="h-6 w-6" aria-hidden="true" />
+                            )}
+                        </span>
                     </div>
                     {sectionVisibility[sectionIndex] && (
                         <ul className="mt-4 space-y-4">
