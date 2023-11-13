@@ -4,7 +4,7 @@ import Settings from '../helpers/settings';
 
 export default function Setting() {
     const [gpsNumOffsetSamples, setGpsNumOffsetSamples] = useState(
-        Number(Settings.get(Settings.setting.gpsNumOffsetSamples.name)),
+        Number(Settings.get(Settings.setting.altNumOffsetSamples.name)),
     );
     const [dropSecsRelease, setDropSecsRelease] = useState(Number(Settings.get(Settings.setting.dropSecsRelease.name)));
     const [configAutoSave, setConfigAutoSave] = useState(Settings.get(Settings.setting.configAutoSave.name));
@@ -18,7 +18,7 @@ export default function Setting() {
                             Settings
                         </h2>
                         <div className="sm:col-span-3 space-y-6">
-                            <h3 className="text-xl font-bold leading-6 text-sky-500">GPS Offset Samples</h3>
+                            <h3 className="text-xl font-bold leading-6 text-sky-500">Altitude Offset Samples</h3>
                             <p className="text-sm font-medium text-gray-200 w-auto">
                                 Choose how the autopilot system determines altitude:
                                 <br /> <br />
@@ -44,7 +44,7 @@ export default function Setting() {
                                         if (!isNaN(setting)) {
                                             setting = Math.min(Math.max(Number(e.target.value), 0), 100);
                                             setGpsNumOffsetSamples(setting);
-                                            Settings.set(Settings.setting.gpsNumOffsetSamples.name, String(setting));
+                                            Settings.set(Settings.setting.altNumOffsetSamples.name, String(setting));
                                         }
                                     }}
                                 />

@@ -152,6 +152,15 @@ const config: Config = {
             desc: 'If the degree reading from any of the inputs is below this value, the inputs will be disregarded, does not apply during direct mode.',
         },
         {
+            name: 'Throttle Detents Calibrated',
+            id: 'throttleDetentsCalibrated',
+            desc: 'Whether or not the throttle detents have been calibrated. The system will set this automatically if detent calibration has been completed, but if you prefer to manually set the detents, then set this to Calibrated.',
+            enumMap: {
+                0: 'Not Calibrated',
+                1: 'Calibrated',
+            },
+        },
+        {
             name: 'Throttle IDLE Detent',
             id: 'throttleDetentIdle',
             desc: 'Most ESCs have a cutout; the motor does not start spinning exactly after 0%, so set the actual idle here.',
@@ -472,7 +481,7 @@ const config: Config = {
         {
             name: 'PID Tune Status',
             id: 'tuneStatus',
-            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning is complete, but if you prefer to manually set parameters, then set this to Tuned.',
+            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning has been completed, but if you prefer to manually set parameters, then set this to Tuned.',
             enumMap: {
                 0: 'Not Tuned',
                 1: 'Tuned',

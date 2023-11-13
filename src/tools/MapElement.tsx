@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
+import L, { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
 import { Transition, Switch, Menu } from '@headlessui/react';
 import {
     Cog6ToothIcon,
@@ -80,6 +80,15 @@ function MapElement() {
     const [mapAttribution, setMapAttribution] = useState(layers[0].attribution);
     const [defaultAlt, setDefaultAlt] = useState(20);
 
+    const markerIcon = L.icon({
+        iconUrl: '../../marker-icon.png',
+        shadowUrl: '../../marker-shadow.png',
+        iconSize: [25, 41],
+        shadowSize: [41, 41],
+        iconAnchor: [12.5, 38],
+        shadowAnchor: [12.5, 38],
+    });
+
     function updateMarkers(newMarkers: Marker[]) {
         setLoadingJson(true);
         generateMarkersJSON(markers, newMarkers).then(returnedString => {
@@ -134,7 +143,7 @@ function MapElement() {
         setEditID(null);
     };
 
-    const marketEditMode = (id: number, map: Map | null) => {
+    const markerEditMode = (id: number, map: Map | null) => {
         if (map) {
             const marker = markers.find(marker => marker.id === id);
             map.setView(marker ? marker.position : ({ lat: 0, lng: 0 } as LatLng), 19);
@@ -200,10 +209,11 @@ function MapElement() {
                     <Marker
                         key={marker.id}
                         position={marker.position}
+                        icon={markerIcon}
                         draggable={true}
                         eventHandlers={{
                             dragend: (e: DragEndEvent) => handleMarkerDragEnd(marker.id, e),
-                            click: () => marketEditMode(marker.id, map),
+                            click: () => markerEditMode(marker.id, map),
                         }}
                     ></Marker>
                 ))}
@@ -632,7 +642,7 @@ function MapElement() {
                                                                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                                                         <a
                                                                             onClick={() =>
-                                                                                marketEditMode(marker.id, map)
+                                                                                markerEditMode(marker.id, map)
                                                                             }
                                                                             className="text-indigo-400 hover:text-indigo-300"
                                                                         >
@@ -690,7 +700,7 @@ function MapElement() {
                                                                 </td>
                                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                                                     <a
-                                                                        onClick={() => marketEditMode(marker.id, map)}
+                                                                        onClick={() => markerEditMode(marker.id, map)}
                                                                         className="text-indigo-400 hover:text-indigo-300"
                                                                     >
                                                                         Edit

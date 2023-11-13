@@ -28,10 +28,10 @@ async function toMSL(locations: number[][]): Promise<number[]> {
 
 export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> => {
     try {
-        const gpsSamples = Number(Settings.get(Settings.setting.gpsNumOffsetSamples.name));
+        const altSamples = Number(Settings.get(Settings.setting.altNumOffsetSamples.name));
         const dropSecs = Number(Settings.get(Settings.setting.dropSecsRelease.name));
 
-        if (gpsSamples === 0) {
+        if (altSamples === 0) {
             const toFetch = markers.filter(
                 // Only fetch markers that have a valid altitude and have either changed position or never have had their alt fetched
                 marker => {
@@ -62,7 +62,7 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
                     }
                 });
             }
-        } else if (gpsSamples > 0 && gpsSamples <= 100 && !isNaN(gpsSamples)) {
+        } else if (altSamples > 0 && altSamples <= 100 && !isNaN(altSamples)) {
             // Don't fetch any altitude data, that will be done onboard the aircraft
             markers.forEach(marker => {
                 cachedAltitudes[marker.id] = 0;
@@ -90,7 +90,7 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
         const json = JSON.stringify({
             version: '1.0',
             version_fw: '0.0.1',
-            gps_samples: gpsSamples,
+            alt_samples: altSamples,
             waypoints,
         });
 

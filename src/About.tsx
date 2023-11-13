@@ -47,6 +47,7 @@ const libraries = [
     { name: 'React', href: 'https://react.dev/' },
     { name: 'Tailwind Labs', href: 'https://tailwindcss.com/' },
     { name: 'The MicroPython Project', href: 'https://micropython.org/' },
+    { name: 'Visual Studio Code', href: 'https://code.visualstudio.com/' },
 ];
 
 export default function About() {
@@ -59,7 +60,7 @@ export default function About() {
                     loop
                     muted
                     playsInline
-                    className="absolute inset-0 -z-10 h-full w-full object-cover object-right md:object-center hidden sm:block opacity-20"
+                    className="absolute inset-0 -z-10 h-full w-full object-cover object-right md:object-center hidden sm:block opacity-10"
                 >
                     <source src="../prod.mp4" type="video/mp4" />
                     Sorry, your browser does not support video.
@@ -139,7 +140,7 @@ export default function About() {
                             <h2 className="mt-10 text-2xl font-bold leading-7 text-white mb-2">Open Source</h2>
                             <p className="text-md leading-8 text-gray-300 mb-6">
                                 pico-fbw would not have been possible without the hard work and dedication of open
-                                source software developers!
+                                source software developers and organizations!
                             </p>
                             <ul className="list-disc list-inside text-gray-300">
                                 {libraries.map((library, index) => (
