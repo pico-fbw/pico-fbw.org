@@ -77,8 +77,10 @@ const config: Config = {
             enumMap: {
                 0: 'Conventional (3-axis) with Autothrottle',
                 1: 'Conventional (3-axis)',
-                2: 'Flying Wing with Autothrottle',
-                3: 'Flying Wing',
+                2: 'Rudderless (2-axis) with Autothrottle',
+                3: 'Rudderless (2-axis)',
+                4: 'Flying Wing with Autothrottle',
+                5: 'Flying Wing',
             },
         },
         {
@@ -154,7 +156,7 @@ const config: Config = {
         {
             name: 'Throttle Detents Calibrated',
             id: 'throttleDetentsCalibrated',
-            desc: 'Whether or not the throttle detents have been calibrated. The system will set this automatically if detent calibration has been completed, but if you prefer to manually set the detents, then set this to Calibrated.',
+            desc: 'Whether or not the throttle detents have been calibrated. The system will set this automatically if detent calibration has been completed, but if you prefer to manually set the detents, then do so and set this to Calibrated.',
             enumMap: {
                 0: 'Not Calibrated',
                 1: 'Calibrated',
@@ -426,9 +428,9 @@ const config: Config = {
             },
         },
         {
-            name: 'Debug: IMU',
-            id: 'debug_imu',
-            desc: 'Enables more specific logs, warnings, and errors pertaining to the IMU.',
+            name: 'Debug: AAHRS',
+            id: 'debug_aahrs',
+            desc: 'Enables more specific logs, warnings, and errors pertaining to the AAHRS system.',
             enumMap: {
                 0: 'Disabled',
                 1: 'Enabled',
@@ -481,7 +483,7 @@ const config: Config = {
         {
             name: 'PID Tune Status',
             id: 'tuneStatus',
-            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning has been completed, but if you prefer to manually set parameters, then set this to Tuned.',
+            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning has been completed, but if you prefer to manually set parameters, then do so and set this to Tuned.',
             enumMap: {
                 0: 'Not Tuned',
                 1: 'Tuned',
@@ -490,107 +492,92 @@ const config: Config = {
         {
             name: 'Roll kP',
             id: 'roll_kp',
-            desc: '',
+            desc: "kP (proportional) term of the roll axis PID controller. This determines the immediate responsiveness of the aircraft and influences the magnitude of pico-fbw's corrective action.",
         },
         {
-            name: 'Roll ti',
-            id: 'roll_ti',
-            desc: '',
+            name: 'Roll ki',
+            id: 'roll_ki',
+            desc: 'ki (integral) term of the roll axis PID controller. This determines the long-term responsiveness of the aircraft, and can increase the corrective action over time if not enough change is seen.',
         },
         {
-            name: 'Roll tD',
-            id: 'roll_td',
-            desc: '',
+            name: 'Roll kD',
+            id: 'roll_kd',
+            desc: 'kD (derivative) term of the roll axis PID controller. This provides dampening to the aircraft by anticipating future behavior to minimize overshoot and oscillation.',
         },
         {
-            name: 'Roll kT',
-            id: 'roll_kt',
-            desc: '',
-        },
-        {
-            name: 'Roll Tau',
+            name: 'Roll tau',
             id: 'roll_tau',
-            desc: '',
+            desc: "tau (derivative low-pass filter time) constant of the roll axis PID controller. This influences the responsiveness of the derivative term in the controller's output calculation.",
         },
         {
             name: 'Roll Integrator Minimum',
             id: 'roll_integMin',
-            desc: '',
+            desc: 'Minimum allowable value for the integral term in the roll axis PID controller. This prevents excessive accumulation and mitigates wind-up issues, especially when the aircraft is operating at its output limits.',
         },
         {
             name: 'Roll Integrator Maximum',
             id: 'roll_integMax',
-            desc: '',
+            desc: 'Maximum allowable value for the integral term in the roll axis PID controller. This prevents excessive accumulation and mitigates wind-up issues, especially when the aircraft is operating at its output limits.',
         },
         {
             name: 'Pitch kP',
-            id: 'roll_kp',
-            desc: '',
+            id: 'pitch_kp',
+            desc: 'kP (proportional) term of the pitch axis PID controller.',
         },
         {
-            name: 'Pitch ti',
-            id: 'pitch_ti',
-            desc: '',
+            name: 'Pitch ki',
+            id: 'pitch_ki',
+            desc: 'ki (integral) term of the pitch axis PID controller.',
         },
         {
-            name: 'Pitch tD',
-            id: 'pitch_td',
-            desc: '',
-        },
-        {
-            name: 'Pitch kT',
-            id: 'pitch_kt',
-            desc: '',
+            name: 'Pitch kD',
+            id: 'pitch_kd',
+            desc: 'kD (derivative) term of the pitch axis PID controller.',
         },
         {
             name: 'Pitch Tau',
             id: 'pitch_tau',
-            desc: '',
+            desc: 'tau (derivative low-pass filter time) constant of the pitch axis PID controller.',
         },
         {
             name: 'Pitch Integrator Minimum',
             id: 'pitch_integMin',
-            desc: '',
+            desc: 'Minimum allowable value for the integral term in the pitch axis PID controller.',
         },
         {
             name: 'Pitch Integrator Maximum',
             id: 'pitch_integMax',
-            desc: '',
+            desc: 'Maximum allowable value for the integral term in the pitch axis PID controller.',
         },
         {
             name: 'Yaw kP',
             id: 'yaw_kp',
-            desc: '',
+            desc: 'kP (proportional) term of the yaw axis PID controller.',
         },
         {
-            name: 'Yaw ti',
-            id: 'yaw_ti',
-            desc: '',
+            name: 'Yaw ki',
+            id: 'yaw_ki',
+            desc: 'ki (integral) term of the yaw axis PID controller.',
         },
         {
-            name: 'Yaw tD',
-            id: 'yaw_td',
-            desc: '',
-        },
-        {
-            name: 'Yaw kT',
-            id: 'yaw_kt',
-            desc: '',
+            name: 'Yaw kD',
+            id: 'yaw_kd',
+            desc: 'kD (derivative) term of the yaw axis PID controller.',
         },
         {
             name: 'Yaw Tau',
             id: 'yaw_tau',
-            desc: '',
+            desc: 'tau (derivative low-pass filter time) constant of the yaw axis PID controller.',
         },
         {
             name: 'Yaw Integrator Minimum',
             id: 'yaw_integMin',
-            desc: '',
+            desc: 'Minimum allowable value for the integral term in the yaw axis PID controller.',
         },
         {
             name: 'Yaw Integrator Maximum',
             id: 'yaw_integMax',
-            desc: '',
+            desc: 'Maximum allowable value for the integral term in the yaw axis PID controller.',
         },
     ],
 };
@@ -651,14 +638,17 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
     ) => {
         let toSet: number | string = value;
         let toSetNum = parseFloat(value);
-        if (isNaN(toSetNum)) {
-            if (value === '') {
-                // Blank in a number field
-                toSet = '0';
-                toSetNum = 0;
+        if (write) {
+            // Normalize fields if writing
+            if (isNaN(toSetNum)) {
+                if (value === '') {
+                    // Blank in a number field
+                    toSet = '0.0';
+                    toSetNum = 0.0;
+                }
+            } else {
+                toSet = toSetNum;
             }
-        } else {
-            toSet = toSetNum;
         }
         setData(prevData => {
             if (!prevData) return null;
@@ -723,13 +713,13 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                                     value !== null && (
                                         <li key={keyIndex} className="bg-gray-800 p-4 rounded-md shadow-md">
                                             <div className="text-xl font-semibold text-white">
-                                                {config[section.name as keyof typeof config][keyIndex].name}
+                                                {config[section.name as keyof typeof config]?.[keyIndex]?.name}
                                             </div>
                                             <div className="text-xs text-gray-400 mt-2">
-                                                {config[section.name as keyof typeof config][keyIndex].desc}
+                                                {config[section.name as keyof typeof config]?.[keyIndex]?.desc}
                                             </div>
-                                            <div className="mt-2">
-                                                {config[section.name as keyof typeof config][keyIndex].enumMap ? (
+                                            <div className="mt-3">
+                                                {config[section.name as keyof typeof config]?.[keyIndex]?.enumMap ? (
                                                     // Dropdown for enums
                                                     <select
                                                         className="block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring focus:ring-opacity-50"

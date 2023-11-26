@@ -1,6 +1,9 @@
 import { Marker } from '../tools/MapElement';
 import Settings from '../helpers/settings';
 
+const generatorVersion = '1.0';
+const firmwareVersion = '1.0.0'; // Latest stable version of pico-fbw firmware
+
 const url = 'http://193.243.190.83/'; // DNS lookup is currently broken for some reason
 
 const cachedAltitudes: number[] = [];
@@ -88,8 +91,8 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
         });
 
         const json = JSON.stringify({
-            version: '1.0',
-            version_fw: '0.0.1',
+            version: generatorVersion,
+            version_fw: firmwareVersion,
             alt_samples: altSamples,
             waypoints,
         });
