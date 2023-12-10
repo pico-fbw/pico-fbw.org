@@ -141,7 +141,7 @@ const config: Config = {
         {
             name: 'Control Sensitivity',
             id: 'controlSensitivity',
-            desc: 'Values from the receiver are multiplied by this in normal mode. Smaller values mean handling will be more sluggish like a larger plane, and larger values mean handling will be more agile like a typical RC plane. This must be quite a small value--the setpoint is calculated many times per second!',
+            desc: 'Values from the receiver are multiplied by this number in normal mode. Smaller values mean handling will be more sluggish like a larger plane, and larger values mean handling will be more agile like a typical RC plane. This must be quite a small value--the setpoint is calculated many times per second!',
         },
         {
             name: 'Rudder Sensitivity',
@@ -165,22 +165,32 @@ const config: Config = {
         {
             name: 'Throttle IDLE Detent',
             id: 'throttleDetentIdle',
-            desc: 'Most ESCs have a cutout; the motor does not start spinning exactly after 0%, so set the actual idle here.',
+            desc: 'Most ESCs have a cutout; the motor does not start spinning exactly after 0%, so set the actual idle (0-100%) here.',
         },
         {
             name: 'Throttle MCT Detent',
             id: 'throttleDetentMCT',
-            desc: 'Maximum throttle that is allowed for an extended period of time.',
+            desc: 'Maximum throttle (0-100%) that is allowed for an extended period of time.',
         },
         {
             name: 'Throttle MAX Detent',
             id: 'throttleDetentMax',
-            desc: 'Maximum throttle that is allowed for a short duration, set in the `Throttle MAX Time`.',
+            desc: 'Maximum throttle (0-100%) that is allowed for a short duration, set in the `Throttle MAX Time`.',
         },
         {
             name: 'Throttle MAX Time',
             id: 'throttleMaxTime',
-            desc: 'The maximum time in seconds that the throttle can be held at `Throttle MAX` before `Throttle MCT` must be set.',
+            desc: 'The maximum time in seconds that the throttle can be held above `Throttle MCT` before `Throttle MCT` must be set.',
+        },
+        {
+            name: 'Throttle Cooldown Time',
+            id: 'throttleCooldownTime',
+            desc: 'The duration that must elapse after the throttle surpasses MCT before it is allowed to exceed MCT again.',
+        },
+        {
+            name: 'Throttle Sensitivity',
+            id: 'throttleSensitivity',
+            desc: 'Determines the sensitivity (smoothness/responsiveness) of throttle commands. Values range from 0 to 1. Smaller values will result in more smooth and therefore less responsive throttle movements, and larger values will result in more responsive and aggressive throttle movements.',
         },
         {
             name: 'Drop Detent (Closed)',
@@ -589,7 +599,7 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         data ? new Array(data.sections.length).fill(false) : [],
     );
 
-    const autosave = Settings.get(Settings.setting.configAutoSave.name) === '1';
+    const autosave = Settings.get('configAutoSave') === '1';
 
     if (!serial) {
         setSerialStatus('No serial port available.');
@@ -670,7 +680,7 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                 const newc = JSON.parse(response)?.key;
                 if ((!newc || newc !== toSet) && toSetNum !== 0) {
                     console.warn(`Value read back was ${newc}, should have been ${toSet}`);
-                    throw new Error('Failed to verify config change');
+                    throw new Error('Failed to verify config change, please try again');
                 }
             } catch (error) {
                 if (error instanceof Error) {
@@ -692,13 +702,13 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
             {data.sections.map((section, sectionIndex) => (
                 <div key={sectionIndex} className="py-6">
                     <div
-                        className="flex w-full items-start justify-between text-left text-white"
+                        className="flex w-full items-start justify-between text-left text-white cursor-pointer"
                         onClick={() => toggleSection(sectionIndex)}
                     >
                         <span className="text-base font-semibold leading-7">
                             {section.name === 'WiFly' ? 'Wi-Fly' : section.name}
                         </span>
-                        <span className="ml-6 flex h-7 items-center, cursor-pointer">
+                        <span className="ml-6 flex h-7 items-center">
                             {sectionVisibility[sectionIndex] ? (
                                 <MinusSmallIcon className="h-6 w-6" aria-hidden="true" />
                             ) : (

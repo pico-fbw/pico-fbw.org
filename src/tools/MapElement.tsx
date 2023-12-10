@@ -64,6 +64,7 @@ export interface Marker {
     id: number;
     position: LatLng;
     alt: number;
+    speed: number;
     drop: boolean;
 }
 
@@ -79,6 +80,7 @@ function MapElement() {
     const [mapLink, setMapLink] = useState(layers[0].link);
     const [mapAttribution, setMapAttribution] = useState(layers[0].attribution);
     const [defaultAlt, setDefaultAlt] = useState(20);
+    const [defaultSpeed] = useState(Number(Settings.get('defaultSpeed')));
 
     const markerIcon = L.icon({
         iconUrl: '../../marker-icon.png',
@@ -109,6 +111,7 @@ function MapElement() {
             id: markers.length + 1,
             position: latlng,
             alt: defaultAlt,
+            speed: defaultSpeed,
             drop: false,
         };
         updateMarkers([...markers, newMarker]);
@@ -151,7 +154,7 @@ function MapElement() {
         setEditID(id);
     };
 
-    const getPositionById = (id: number): { position: LatLng; alt: number; drop: boolean } => {
+    const getMarkerById = (id: number): { position: LatLng; alt: number; speed: number; drop: boolean } => {
         const marker = markers.find(marker => marker.id === id);
 
         let latitude = 0,
@@ -164,17 +167,23 @@ function MapElement() {
         }
 
         return marker
-            ? { position: { lat: latitude, lng: longitude } as LatLng, alt: altitude, drop: marker.drop }
-            : { position: { lat: 0, lng: 0 } as LatLng, alt: 0, drop: false };
+            ? {
+                  position: { lat: latitude, lng: longitude } as LatLng,
+                  alt: altitude,
+                  speed: marker.speed,
+                  drop: marker.drop,
+              }
+            : { position: { lat: 0, lng: 0 } as LatLng, alt: 0, speed: 0, drop: false };
     };
 
-    const setMarkerPosition = (id: number, lat: number, lng: number, alt: number, drop: boolean): void => {
+    const setMarker = (id: number, lat: number, lng: number, alt: number, speed: number, drop: boolean): void => {
         const updatedMarkers = markers.map(marker => {
             if (marker.id === id) {
                 return {
                     ...marker,
                     position: { lat, lng } as LatLng,
                     alt: alt,
+                    speed: speed,
                     drop: drop,
                 };
             }
@@ -184,12 +193,19 @@ function MapElement() {
         setPolyline(updatedMarkers.map(marker => marker.position));
     };
 
+    const validateAndClamp = (value: number, min: number, max: number): number => {
+        if (isNaN(value)) {
+            return min;
+        }
+        return Math.min(Math.max(value, min), max);
+    };
+
     const copyJson = () => {
         navigator.clipboard.writeText(fplanJson);
     };
 
     useEffect(() => {
-        const index = parseInt(Settings.get(Settings.setting.plannerMap.name));
+        const index = parseInt(Settings.get('plannerMap'));
         setMapLink(layers[index].link);
     }, []);
 
@@ -259,6 +275,7 @@ function MapElement() {
                                     id: markers.length + 1,
                                     position: map.getCenter(),
                                     alt: defaultAlt,
+                                    speed: defaultSpeed,
                                     drop: false,
                                 };
                                 updateMarkers([...markers, newMarker]);
@@ -291,10 +308,7 @@ function MapElement() {
                                                         onClick={() => {
                                                             setMapLink(layer.link);
                                                             setMapAttribution(layer.attribution);
-                                                            Settings.set(
-                                                                Settings.setting.plannerMap.name,
-                                                                layer.id.toString(),
-                                                            );
+                                                            Settings.set('plannerMap', layer.id.toString());
                                                         }}
                                                         className={classNames(
                                                             active || mapLink === layer.link
@@ -355,7 +369,7 @@ function MapElement() {
                                 <h2 className="text-2xl font-bold leading-7 text-white sm:text-3xl sm:tracking-tight sm:col-span-1 my-auto">
                                     #{editID}
                                 </h2>
-                                <div className="sm:col-span-3">
+                                <div className="sm:col-span-2">
                                     <label
                                         htmlFor="latitude"
                                         className="block text-sm font-medium leading-6 text-white"
@@ -368,24 +382,22 @@ function MapElement() {
                                             name="latitude"
                                             id="latitude"
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                            value={getPositionById(editID ? editID : -1).position.lat}
+                                            value={getMarkerById(editID ?? -1).position.lat}
                                             onChange={e => {
-                                                let newLat = Number(e.target.value);
-                                                if (!isNaN(newLat)) {
-                                                    newLat = Math.min(Math.max(parseInt(e.target.value), -90), 90);
-                                                    setMarkerPosition(
-                                                        editID ? editID : -1,
-                                                        newLat,
-                                                        getPositionById(editID ? editID : -1).position.lng,
-                                                        getPositionById(editID ? editID : -1).alt,
-                                                        getPositionById(editID ? editID : -1).drop,
-                                                    );
-                                                }
+                                                const newLat = validateAndClamp(Number(e.target.value), -90, 90);
+                                                setMarker(
+                                                    editID ?? -1,
+                                                    newLat,
+                                                    getMarkerById(editID ?? -1).position.lng,
+                                                    getMarkerById(editID ?? -1).alt,
+                                                    getMarkerById(editID ?? -1).speed,
+                                                    getMarkerById(editID ?? -1).drop,
+                                                );
                                             }}
                                         />
                                     </div>
                                 </div>
-                                <div className="sm:col-span-3">
+                                <div className="sm:col-span-2">
                                     <label
                                         htmlFor="longitude"
                                         className="block text-sm font-medium leading-6 text-white"
@@ -398,19 +410,17 @@ function MapElement() {
                                             name="longitude"
                                             id="longitude"
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                            value={getPositionById(editID ? editID : -1).position.lng}
+                                            value={getMarkerById(editID ?? -1).position.lng}
                                             onChange={e => {
-                                                let newLng = Number(e.target.value);
-                                                if (!isNaN(newLng)) {
-                                                    newLng = Math.min(Math.max(parseInt(e.target.value), -180), 180);
-                                                    setMarkerPosition(
-                                                        editID ? editID : -1,
-                                                        getPositionById(editID ? editID : -1).position.lat,
-                                                        newLng,
-                                                        getPositionById(editID ? editID : -1).alt,
-                                                        getPositionById(editID ? editID : -1).drop,
-                                                    );
-                                                }
+                                                const newLng = validateAndClamp(Number(e.target.value), -180, 180);
+                                                setMarker(
+                                                    editID ?? -1,
+                                                    getMarkerById(editID ?? -1).position.lat,
+                                                    newLng,
+                                                    getMarkerById(editID ?? -1).alt,
+                                                    getMarkerById(editID ?? -1).speed,
+                                                    getMarkerById(editID ?? -1).drop,
+                                                );
                                             }}
                                         />
                                     </div>
@@ -430,19 +440,44 @@ function MapElement() {
                                             name="altitude"
                                             id="altitude"
                                             className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                            value={getPositionById(editID ? editID : -1).alt}
+                                            value={getMarkerById(editID ?? -1).alt}
                                             onChange={e => {
-                                                let newAlt = Number(e.target.value);
-                                                if (!isNaN(newAlt)) {
-                                                    newAlt = Math.min(Math.max(parseInt(e.target.value), -5), 400);
-                                                    setMarkerPosition(
-                                                        editID ? editID : -1,
-                                                        getPositionById(editID ? editID : -1).position.lat,
-                                                        getPositionById(editID ? editID : -1).position.lng,
-                                                        newAlt,
-                                                        getPositionById(editID ? editID : -1).drop,
-                                                    );
-                                                }
+                                                const newAlt = validateAndClamp(Number(e.target.value), -5, 400);
+                                                setMarker(
+                                                    editID ?? -1,
+                                                    getMarkerById(editID ?? -1).position.lat,
+                                                    getMarkerById(editID ?? -1).position.lng,
+                                                    newAlt,
+                                                    getMarkerById(editID ?? -1).speed,
+                                                    getMarkerById(editID ?? -1).drop,
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="speed" className="block text-sm font-medium leading-6 text-white">
+                                        Speed
+                                    </label>
+                                    <div className="mt-2">
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={100}
+                                            name="speed"
+                                            id="speed"
+                                            className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                                            value={getMarkerById(editID ?? -1).speed}
+                                            onChange={e => {
+                                                const newSpeed = validateAndClamp(Number(e.target.value), 1, 100);
+                                                setMarker(
+                                                    editID ?? -1,
+                                                    getMarkerById(editID ?? -1).position.lat,
+                                                    getMarkerById(editID ?? -1).position.lng,
+                                                    getMarkerById(editID ?? -1).alt,
+                                                    newSpeed,
+                                                    getMarkerById(editID ?? -1).drop,
+                                                );
                                             }}
                                         />
                                     </div>
@@ -457,13 +492,14 @@ function MapElement() {
                                             name="drop"
                                             id="drop"
                                             className="h-5 w-5 cursor-pointer appearance-none rounded-md border transition-all checked:border-indigo-500 checked:bg-indigo-500 checked:before:bg-indigo-500"
-                                            checked={getPositionById(editID ? editID : -1).drop}
+                                            checked={getMarkerById(editID ?? -1).drop}
                                             onChange={e => {
-                                                setMarkerPosition(
-                                                    editID ? editID : -1,
-                                                    getPositionById(editID ? editID : -1).position.lat,
-                                                    getPositionById(editID ? editID : -1).position.lng,
-                                                    getPositionById(editID ? editID : -1).alt,
+                                                setMarker(
+                                                    editID ?? -1,
+                                                    getMarkerById(editID ?? -1).position.lat,
+                                                    getMarkerById(editID ?? -1).position.lng,
+                                                    getMarkerById(editID ?? -1).alt,
+                                                    getMarkerById(editID ?? -1).speed,
                                                     e.target.checked,
                                                 );
                                             }}
@@ -472,7 +508,7 @@ function MapElement() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => removeMarker(editID ? editID : -1)}
+                                    onClick={() => removeMarker(editID ?? -1)}
                                     className="sm:col-span-2 mt-auto rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                                 >
                                     Delete
@@ -577,13 +613,15 @@ function MapElement() {
                                                             scope="col"
                                                             className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                                                         >
-                                                            Latitude
+                                                            <div className="hidden md:block">Latitude</div>
+                                                            <div className="md:hidden">Lat.</div>
                                                         </th>
                                                         <th
                                                             scope="col"
                                                             className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                                                         >
-                                                            Longitude
+                                                            <div className="hidden md:block">Longitude</div>
+                                                            <div className="md:hidden">Long.</div>
                                                         </th>
                                                         <th
                                                             scope="col"
@@ -599,6 +637,12 @@ function MapElement() {
                                                             <div className="hidden md:block">Altitude</div>
                                                             <div className="md:hidden">Alt.</div>
                                                         </th>
+                                                        <th
+                                                            scope="col"
+                                                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                                                        >
+                                                            Speed
+                                                        </th>
                                                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
                                                             <span className="sr-only">Edit</span>
                                                         </th>
@@ -606,63 +650,16 @@ function MapElement() {
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-800">
                                                     {markers.map((marker, index) => {
-                                                        if (index === 0) {
-                                                            return (
-                                                                <tr key={marker.id}>
-                                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                                                                        <>{marker.id}</>
-                                                                        {marker.drop && <i> (drop)</i>}
-                                                                    </td>
-                                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                        <div className="hidden md:block">
-                                                                            {marker.position.lat}
-                                                                        </div>
-                                                                        <div className="md:hidden">
-                                                                            {`${marker.position.lat.toFixed(4)}...`}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                        <div className="hidden md:block">
-                                                                            {marker.position.lng}
-                                                                        </div>
-                                                                        <div className="md:hidden">
-                                                                            {`${marker.position.lng.toFixed(4)}...`}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300"></td>
-                                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                        {marker.alt === -5 ? (
-                                                                            <span className="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">
-                                                                                Hold
-                                                                            </span>
-                                                                        ) : (
-                                                                            <>{marker.alt}ft</>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                                                                        <a
-                                                                            onClick={() =>
-                                                                                markerEditMode(marker.id, map)
-                                                                            }
-                                                                            className="text-indigo-400 hover:text-indigo-300"
-                                                                        >
-                                                                            Edit
-                                                                            <span className="sr-only">
-                                                                                , {marker.id}
-                                                                            </span>
-                                                                        </a>
-                                                                    </td>
-                                                                </tr>
+                                                        let distanceToPrevious;
+                                                        if (index > 0) {
+                                                            const previousMarker = markers[index - 1];
+                                                            distanceToPrevious = calculateDistance(
+                                                                marker.position.lat,
+                                                                marker.position.lng,
+                                                                previousMarker.position.lat,
+                                                                previousMarker.position.lng,
                                                             );
                                                         }
-
-                                                        const previousMarker = markers[index - 1];
-                                                        const distanceToPrevious = calculateDistance(
-                                                            marker.position.lat,
-                                                            marker.position.lng,
-                                                            previousMarker.position.lat,
-                                                            previousMarker.position.lng,
-                                                        );
 
                                                         return (
                                                             <tr key={marker.id}>
@@ -687,7 +684,7 @@ function MapElement() {
                                                                     </div>
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                                                    {distanceToPrevious}
+                                                                    {distanceToPrevious || ''}
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                                     {marker.alt === -5 ? (
@@ -697,6 +694,9 @@ function MapElement() {
                                                                     ) : (
                                                                         <>{marker.alt}ft</>
                                                                     )}
+                                                                </td>
+                                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                                                    <>{marker.speed}kts</>
                                                                 </td>
                                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                                                     <a

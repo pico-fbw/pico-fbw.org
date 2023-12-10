@@ -3,11 +3,10 @@ import PageContentBlock from '../elements/PageContentBlock';
 import Settings from '../helpers/settings';
 
 export default function Setting() {
-    const [gpsNumOffsetSamples, setGpsNumOffsetSamples] = useState(
-        Number(Settings.get(Settings.setting.altNumOffsetSamples.name)),
-    );
-    const [dropSecsRelease, setDropSecsRelease] = useState(Number(Settings.get(Settings.setting.dropSecsRelease.name)));
-    const [configAutoSave, setConfigAutoSave] = useState(Settings.get(Settings.setting.configAutoSave.name));
+    const [gpsNumOffsetSamples, setGpsNumOffsetSamples] = useState(Number(Settings.get('altNumOffsetSamples')));
+    const [defaultSpeed, setDefaultSpeed] = useState(Number(Settings.get('defaultSpeed')));
+    const [dropSecsRelease, setDropSecsRelease] = useState(Number(Settings.get('dropSecsRelease')));
+    const [configAutoSave, setConfigAutoSave] = useState(Settings.get('configAutoSave'));
 
     return (
         <>
@@ -22,14 +21,14 @@ export default function Setting() {
                             <p className="text-sm font-medium text-gray-200 w-auto">
                                 Choose how the autopilot system determines altitude:
                                 <br /> <br />
-                                <b>- 0 (Default):</b> Altitude is pre-calculated based on a database (accuracy within
-                                100 feet, more applicable for hilly areas or high flying).
+                                <b>- 0:</b> Altitude is pre-calculated based on a database (accuracy within 100 feet,
+                                more applicable for hilly areas or high flying).
                                 <br />
-                                <b>- 1-100:</b> Uses GPS/barometric altitude as an offset for more precise altitude
-                                control during flight (more applicable for flatter areas and lower flying).
+                                <b>- 1-100 (default 10):</b> Uses GPS/barometric altitude as an offset for more precise
+                                altitude control during flight (more applicable for flatter areas and lower flying).
                                 <br /> <br />
                                 Note that higher values will require additional time before auto mode may be engaged,
-                                especially for GPS-based systems.
+                                especially for systems that rely on GPS for altitude.
                             </p>
 
                             <div>
@@ -44,14 +43,39 @@ export default function Setting() {
                                         if (!isNaN(setting)) {
                                             setting = Math.min(Math.max(Number(e.target.value), 0), 100);
                                             setGpsNumOffsetSamples(setting);
-                                            Settings.set(Settings.setting.altNumOffsetSamples.name, String(setting));
+                                            Settings.set('altNumOffsetSamples', String(setting));
                                         }
                                     }}
                                 />
                             </div>
                         </div>
                         <div className="sm:col-span-3 space-y-6">
-                            <h3 className="text-xl font-bold leading-6 text-sky-500">Drop Seconds Released</h3>
+                            <h3 className="text-xl font-bold leading-6 text-sky-500">Default Waypoint Speed</h3>
+                            <p className="text-sm font-medium text-gray-200 w-auto">
+                                The default speed (in knots) to set at each waypoint. This is measured as the speed over
+                                the ground, not as airspeed.
+                            </p>
+
+                            <div>
+                                <input
+                                    type="number"
+                                    id="setting1"
+                                    name="setting1"
+                                    className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                                    value={defaultSpeed}
+                                    onChange={e => {
+                                        let setting = Number(e.target.value);
+                                        if (!isNaN(setting)) {
+                                            setting = Math.min(Math.max(Number(e.target.value), 1), 100);
+                                            setDefaultSpeed(setting);
+                                            Settings.set('defaultSpeed', String(setting));
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="sm:col-span-3 space-y-6">
+                            <h3 className="text-xl font-bold leading-6 text-sky-500">Drop Release Time</h3>
                             <p className="text-sm font-medium text-gray-200 w-auto">
                                 The number of seconds the drop mechanism will stay released for, after a drop is
                                 initiated.
@@ -62,8 +86,8 @@ export default function Setting() {
                             <div>
                                 <input
                                     type="number"
-                                    id="setting1"
-                                    name="setting1"
+                                    id="setting2"
+                                    name="setting2"
                                     className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                     value={dropSecsRelease}
                                     onChange={e => {
@@ -72,7 +96,7 @@ export default function Setting() {
                                             setting = Math.min(Math.max(Number(e.target.value), -1), 60);
                                             if (setting === 0) setting = -1;
                                             setDropSecsRelease(setting);
-                                            Settings.set(Settings.setting.dropSecsRelease.name, String(setting));
+                                            Settings.set('dropSecsRelease', String(setting));
                                         }
                                     }}
                                 />
@@ -86,14 +110,14 @@ export default function Setting() {
 
                             <div>
                                 <select
-                                    id="setting2"
-                                    name="setting2"
+                                    id="setting3"
+                                    name="setting3"
                                     className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                     value={configAutoSave}
                                     onChange={e => {
                                         const setting = e.target.value;
                                         setConfigAutoSave(setting);
-                                        Settings.set(Settings.setting.configAutoSave.name, String(setting));
+                                        Settings.set('configAutoSave', String(setting));
                                     }}
                                 >
                                     <option value="0">Disabled</option>

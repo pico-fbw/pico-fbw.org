@@ -31,8 +31,8 @@ async function toMSL(locations: number[][]): Promise<number[]> {
 
 export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> => {
     try {
-        const altSamples = Number(Settings.get(Settings.setting.altNumOffsetSamples.name));
-        const dropSecs = Number(Settings.get(Settings.setting.dropSecsRelease.name));
+        const altSamples = Number(Settings.get('altNumOffsetSamples'));
+        const dropSecs = Number(Settings.get('dropSecsRelease'));
 
         if (altSamples === 0) {
             const toFetch = markers.filter(
@@ -86,7 +86,8 @@ export default async (oldMarkers: Marker[], markers: Marker[]): Promise<string> 
                 lng: marker.position.lng,
                 // Preserve hold, otherwise final alt (MSL) = AGL + calculated MSL at point
                 alt: marker.alt >= 0 ? cachedAltitudes[marker.id] + marker.alt : marker.alt,
-                drop: marker.drop ? dropSecs : 0,
+                spd: marker.speed,
+                drp: marker.drop ? dropSecs : 0,
             };
         });
 

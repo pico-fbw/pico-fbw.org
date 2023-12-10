@@ -4,8 +4,6 @@ import Alert from '../elements/Alert';
 import ConfigViewer from '../elements/tools/ConfigViewer';
 import PageContentBlock from '../elements/PageContentBlock';
 
-// TODO: setting for first-time onboarding to config editor with guided setup (and possibly replicate for flight planenr as well)
-
 interface DeviceInfo {
     version: string;
     version_api: string;
@@ -70,7 +68,7 @@ export default function Config() {
                     <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
                         <h2 className="text-2xl font-bold leading-7 text-sky-500 sm:text-3xl sm:tracking-tight sm:col-span-1 my-auto">
                             Config Editor
-                            <span className="bg-blue-200 text-blue-800 text-sm font-semibold me-2 px-1.5 py-0.5 rounded ms-3 relative top-[-5px]">
+                            <span className="bg-blue-500/10 text-blue-400 ring-1 ring-inset ring-blue-400/30 text-sm font-semibold me-2 px-1.5 py-0.5 rounded ms-3 relative top-[-5px]">
                                 Beta
                             </span>
                         </h2>

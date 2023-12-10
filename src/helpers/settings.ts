@@ -1,29 +1,22 @@
 export default class Settings {
     static setting = {
-        altNumOffsetSamples: { name: 'altNumOffsetSamples', defaultValue: '0' },
-        dropSecsRelease: { name: 'dropSecsRelease', defaultValue: '10' },
-        configAutoSave: { name: 'configAutoSave', defaultValue: '1' },
-        plannerMap: { name: 'plannerMap', defaultValue: '0' },
-        plannerOnboarded: { name: 'plannerOnboarded', defaultValue: '0' },
-        configOnboarded: { name: 'configOnboarded', defaultValue: '0' },
+        altNumOffsetSamples: { value: '10' },
+        defaultSpeed: { value: '25' },
+        dropSecsRelease: { value: '10' },
+        configAutoSave: { value: '1' },
+        plannerMap: { value: '0' },
     } as const;
 
-    static get(settingKey: keyof typeof this.setting): string {
-        const name = this.setting[settingKey].name;
-        const value = localStorage.getItem(name);
-
-        if (value !== null) {
+    static get<K extends keyof typeof this.setting>(key: K): string {
+        const value = localStorage.getItem(key);
+        if (value) {
             return value;
-        } else {
-            // If not found in local storage, use the default value
-            const defaultValue = this.setting[settingKey].defaultValue;
-            this.set(settingKey, defaultValue);
-            return defaultValue;
         }
+        // No local storage entry found, return default value
+        return this.setting[key].value;
     }
 
-    static set(settingKey: keyof typeof this.setting, value: string): void {
-        const name = this.setting[settingKey].name;
-        localStorage.setItem(name, value);
+    static set<K extends keyof typeof this.setting>(key: K, value: string): void {
+        localStorage.setItem(key, value);
     }
 }
