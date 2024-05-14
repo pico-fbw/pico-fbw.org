@@ -3,14 +3,14 @@ import PageContentBlock from '../elements/PageContentBlock';
 import Settings from '../helpers/settings';
 
 export default function Setting() {
-    const [gpsNumOffsetSamples, setGpsNumOffsetSamples] = useState(Number(Settings.get('altNumOffsetSamples')));
+    const [altSamples, setAltSamples] = useState(Number(Settings.get('altSamples')));
     const [defaultSpeed, setDefaultSpeed] = useState(Number(Settings.get('defaultSpeed')));
-    const [dropSecsRelease, setDropSecsRelease] = useState(Number(Settings.get('dropSecsRelease')));
+    const [dropSecs, setDropSecs] = useState(Number(Settings.get('dropSecs')));
     const [configAutoSave, setConfigAutoSave] = useState(Settings.get('configAutoSave'));
 
     return (
         <>
-            <PageContentBlock title={'pico-fbw | Settings'}>
+            <PageContentBlock sidebar title={'pico-fbw | Settings'}>
                 <div className="divide-y divide-white/5">
                     <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
                         <h2 className="text-2xl font-bold leading-7 text-sky-500 sm:text-3xl sm:tracking-tight sm:col-span-1 my-auto">
@@ -19,16 +19,9 @@ export default function Setting() {
                         <div className="sm:col-span-3 space-y-6">
                             <h3 className="text-xl font-bold leading-6 text-sky-500">Altitude Offset Samples</h3>
                             <p className="text-sm font-medium text-gray-200 w-auto">
-                                Choose how the autopilot system determines altitude:
-                                <br /> <br />
-                                <b>- 0:</b> Altitude is pre-calculated based on a database (accuracy within 100 feet,
-                                more applicable for hilly areas or high flying).
-                                <br />
-                                <b>- 1-100 (default 10):</b> Uses GPS/barometric altitude as an offset for more precise
-                                altitude control during flight (more applicable for flatter areas and lower flying).
-                                <br /> <br />
-                                Note that higher values will require additional time before auto mode may be engaged,
-                                especially for systems that rely on GPS for altitude.
+                                The number of altitude readings to take when determining the autopilot&apos;s ground
+                                offset altitude. Note that higher values will require additional time before auto mode
+                                may be engaged, especially for systems that rely on GPS for altitude.
                             </p>
 
                             <div>
@@ -37,13 +30,13 @@ export default function Setting() {
                                     id="setting0"
                                     name="setting0"
                                     className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                    value={gpsNumOffsetSamples}
+                                    value={altSamples}
                                     onChange={e => {
                                         let setting = Number(e.target.value);
                                         if (!isNaN(setting)) {
-                                            setting = Math.min(Math.max(Number(e.target.value), 0), 100);
-                                            setGpsNumOffsetSamples(setting);
-                                            Settings.set('altNumOffsetSamples', String(setting));
+                                            setting = Math.min(Math.max(Number(e.target.value), 1), 100);
+                                            setAltSamples(setting);
+                                            Settings.set('altSamples', String(setting));
                                         }
                                     }}
                                 />
@@ -89,14 +82,14 @@ export default function Setting() {
                                     id="setting2"
                                     name="setting2"
                                     className="block rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                                    value={dropSecsRelease}
+                                    value={dropSecs}
                                     onChange={e => {
                                         let setting = Number(e.target.value);
                                         if (!isNaN(setting)) {
                                             setting = Math.min(Math.max(Number(e.target.value), -1), 60);
                                             if (setting === 0) setting = -1;
-                                            setDropSecsRelease(setting);
-                                            Settings.set('dropSecsRelease', String(setting));
+                                            setDropSecs(setting);
+                                            Settings.set('dropSecs', String(setting));
                                         }
                                     }}
                                 />

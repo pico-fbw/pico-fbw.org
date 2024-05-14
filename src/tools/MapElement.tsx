@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L, { DragEndEvent, LatLng, LeafletMouseEvent, Map } from 'leaflet';
@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import calculateDistance from '../helpers/calculateDistance';
 import classNames from '../helpers/classNames';
-import generateMarkersJSON from '../helpers/generateMarkersJSON';
+import { Flightplan, flightplanToMarkers, markersToFlightplan } from '../helpers/flightplan';
 import Settings from '../helpers/settings';
 import Alert from '../elements/Alert';
 import { NavLink } from 'react-router-dom';
@@ -76,6 +76,7 @@ function MapElement() {
     const [showJson, setShowJson] = useState(false);
     const [loadingJson, setLoadingJson] = useState(false);
     const [errorJson, setErrorJson] = useState(false);
+    const uploadTriggered = useRef(false);
     const [map, setMap] = useState<Map | null>(null);
     const [mapLink, setMapLink] = useState(layers[0].link);
     const [mapAttribution, setMapAttribution] = useState(layers[0].attribution);
@@ -93,16 +94,18 @@ function MapElement() {
 
     function updateMarkers(newMarkers: Marker[]) {
         setLoadingJson(true);
-        generateMarkersJSON(markers, newMarkers).then(returnedString => {
-            if (returnedString !== '') {
-                setErrorJson(false);
-                setFplanJson(returnedString);
-            } else {
-                setErrorJson(true);
-            }
+        let fplan: Flightplan;
+        try {
+            fplan = markersToFlightplan(newMarkers);
+        } catch (e) {
+            console.error('Error parsing markers:', (e as Error).message);
+            setErrorJson(true);
             setLoadingJson(false);
-        });
+            return;
+        }
+        setFplanJson(JSON.stringify(fplan));
         setMarkers(newMarkers);
+        setLoadingJson(false);
     }
 
     const handleMapClick = (e: LeafletMouseEvent) => {
@@ -200,12 +203,57 @@ function MapElement() {
         return Math.min(Math.max(value, min), max);
     };
 
+    const uploadJson = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const newMarkers = flightplanToMarkers(reader.result as string);
+                        updateMarkers(newMarkers);
+                        setPolyline(newMarkers.map(marker => marker.position));
+                        uploadTriggered.current = true;
+                    } catch (e) {
+                        console.error(e);
+                        setShowJson(true);
+                        setErrorJson(true);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+        input.remove();
+    };
+
     const copyJson = () => {
         navigator.clipboard.writeText(fplanJson);
     };
 
+    const downloadJson = () => {
+        const a = document.createElement('a');
+        const file = new Blob([fplanJson], { type: 'application/json' });
+        a.href = URL.createObjectURL(file);
+        const date = new Date().toISOString().split('T')[0];
+        a.download = `fplan_${date}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
     useEffect(() => {
-        const index = parseInt(Settings.get('plannerMap'));
+        if (uploadTriggered.current) {
+            markerEditMode(1, map);
+            uploadTriggered.current = false;
+        }
+    }, [markers]);
+
+    useEffect(() => {
+        const index = parseInt(Settings.get('defaultMap'));
         setMapLink(layers[index].link);
     }, []);
 
@@ -308,7 +356,7 @@ function MapElement() {
                                                         onClick={() => {
                                                             setMapLink(layer.link);
                                                             setMapAttribution(layer.attribution);
-                                                            Settings.set('plannerMap', layer.id.toString());
+                                                            Settings.set('defaultMap', layer.id.toString());
                                                         }}
                                                         className={classNames(
                                                             active || mapLink === layer.link
@@ -556,9 +604,16 @@ function MapElement() {
                             <div className="mt-8 flow-root">
                                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                                        {markers.length < 2 ? (
-                                            <Alert type="info" className="mx-4 sm:mx-6 lg:mx-0">
-                                                Please select at least 2 waypoints
+                                        {markers.length < 2 && !errorJson ? (
+                                            <Alert type="info" className="flex mx-4 sm:mx-6 lg:mx-0">
+                                                Please create at least 2 waypoints
+                                                <span className="hidden md:block">, or&nbsp;</span>
+                                                <a
+                                                    className="hidden md:block cursor-pointer hover:text-sky-500"
+                                                    onClick={uploadJson}
+                                                >
+                                                    click to upload a flightplan
+                                                </a>
                                             </Alert>
                                         ) : showJson ? (
                                             <>
@@ -586,13 +641,22 @@ function MapElement() {
                                                                     className="block w-full rounded-md border-0 bg-white/5 px-2 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
                                                                 />
                                                                 {showJson && markers.length >= 2 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={copyJson}
-                                                                        className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
-                                                                    >
-                                                                        Copy
-                                                                    </button>
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={copyJson}
+                                                                            className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
+                                                                        >
+                                                                            Copy
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={downloadJson}
+                                                                            className="mt-3 w-full rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-white/20 cursor-pointer"
+                                                                        >
+                                                                            Download
+                                                                        </button>
+                                                                    </>
                                                                 )}
                                                             </div>
                                                         )}
@@ -665,7 +729,7 @@ function MapElement() {
                                                             <tr key={marker.id}>
                                                                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
                                                                     {marker.id}
-                                                                    {marker.drop && <i> (drop)</i>}
+                                                                    {marker.drop ? <i> (drop)</i> : ''}
                                                                 </td>
                                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                                                     <div className="hidden md:block">
@@ -701,7 +765,7 @@ function MapElement() {
                                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                                                     <a
                                                                         onClick={() => markerEditMode(marker.id, map)}
-                                                                        className="text-indigo-400 hover:text-indigo-300"
+                                                                        className="text-indigo-400 hover:text-indigo-300 cursor-pointer"
                                                                     >
                                                                         Edit
                                                                         <span className="sr-only">, {marker.id}</span>

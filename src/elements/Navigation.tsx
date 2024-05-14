@@ -7,11 +7,17 @@ export interface NavigationProps {
     hideLinks?: boolean;
 }
 
+interface NavigationItem {
+    name: string;
+    to: string;
+    external?: boolean;
+}
+
 const Navigation: React.FC<NavigationProps> = ({ hideLinks }) => {
-    const navigation = [
+    const navigation: NavigationItem[] = [
         { name: 'Home', to: '/' },
         { name: 'Tools', to: '/tools/planner' },
-        { name: 'Wiki', to: 'https://github.com/pico-fbw/pico-fbw/wiki', external: true },
+        { name: 'Wiki', to: '/wiki/Home' },
         { name: 'About', to: '/about' },
     ];
 

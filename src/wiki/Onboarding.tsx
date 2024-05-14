@@ -60,7 +60,7 @@ export default function Onboarding() {
         setShowInfo(true);
     }, []);
     return (
-        <PageContentBlock hideSidebar title={'pico-fbw | Get Started'}>
+        <PageContentBlock title={'pico-fbw | Get Started'}>
             <Navigation hideLinks />
             <Transition.Root show={showInfo}>
                 <div className="h-screen flex flex-col justify-center items-center mx-4 mt-16 sm:mt-0">
@@ -91,7 +91,7 @@ export default function Onboarding() {
                             >
                                 <OptionCard
                                     bgColor="bg-blue-600"
-                                    imageSrc="../../prodstill.png"
+                                    imageSrc="../../assets/prodstill.png"
                                     title="Buy pico-fbw"
                                     link={'https://pico-fbw.com/products'}
                                     external
@@ -112,8 +112,7 @@ export default function Onboarding() {
                                     bgColor="bg-white/5"
                                     imageSrc="../../icon.svg"
                                     title="Make it yourself"
-                                    link={'https://github.com/pico-fbw/pico-fbw/wiki'}
-                                    external
+                                    link={'/wiki/Home'}
                                     description="Build and install pico-fbw on your own Raspberry Pi Pico"
                                 />
                             </Transition.Child>

@@ -41,7 +41,7 @@ const App = createBrowserRouter(
             <Route path="/wiki">
                 <Route index element={<Wiki />} />
                 <Route path="onboarding" element={<Onboarding />} />
-                <Route path="*" element={<NoMatch />} />
+                <Route path="*" element={<Wiki />} />
             </Route>
         </>,
     ),

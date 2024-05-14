@@ -1,10 +1,11 @@
 export default class Settings {
     static setting = {
-        altNumOffsetSamples: { value: '10' },
-        defaultSpeed: { value: '25' },
-        dropSecsRelease: { value: '10' },
-        configAutoSave: { value: '1' },
-        plannerMap: { value: '0' },
+        altSamples: { default: '10' },
+        configAutoSave: { default: '1' },
+        defaultMap: { default: '0' },
+        dropSecs: { default: '10' },
+        defaultSpeed: { default: '25' },
+        showOfflineNotice: { default: '1' },
     } as const;
 
     static get<K extends keyof typeof this.setting>(key: K): string {
@@ -13,7 +14,7 @@ export default class Settings {
             return value;
         }
         // No local storage entry found, return default value
-        return this.setting[key].value;
+        return this.setting[key].default;
     }
 
     static set<K extends keyof typeof this.setting>(key: K, value: string): void {

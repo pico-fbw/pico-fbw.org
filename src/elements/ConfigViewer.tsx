@@ -1,71 +1,36 @@
 import { useEffect, useState } from 'react';
-import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/react/24/solid';
-import SerialManager from '../../helpers/serialManager';
-import Settings from '../../helpers/settings';
+import { MinusIcon, PlusIcon } from '@heroicons/react/24/solid';
+import SerialManager from '../helpers/serialManager';
+import Settings from '../helpers/settings';
 import { unstable_usePrompt } from 'react-router-dom';
 
 interface ConfigData {
     sections: {
         name: string;
-        keys: (number | string | null)[];
+        keys: (number | string)[];
     }[];
+}
+
+interface ConfigItem {
+    name: string;
+    id: string;
+    desc: string;
+    enumMap?: { [key: number]: string };
+    readOnly?: boolean;
+}
+
+interface Config {
+    General: ConfigItem[];
+    Control: ConfigItem[];
+    Pins: ConfigItem[];
+    Sensors: ConfigItem[];
+    System: ConfigItem[];
+    WiFi: ConfigItem[];
 }
 
 interface DisplayConfigDataProps {
     serial: SerialManager | null;
     setSerialStatus: (status: string) => void;
-}
-
-interface Config {
-    General: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    Control: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    Pins: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    Sensors: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    WiFly: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    System: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
-    PID: {
-        name: string;
-        id: string;
-        desc: string;
-        enumMap?: { [key: number]: string };
-        readOnly?: boolean;
-    }[];
 }
 
 const config: Config = {
@@ -98,27 +63,27 @@ const config: Config = {
             desc: 'The maximum value the system will accept as a calibration offset value for PWM input signals. Increase this value if you are experiencing error FBW-500, however note you may be unprotected from bad calibration data.',
         },
         {
-            name: 'Servo HZ',
+            name: 'Servo Frequency',
             id: 'servoHz',
-            desc: 'The frequency to run your servos at (most are 50).',
+            desc: 'The frequency to run your servos at (most are 50) in Hz.',
         },
         {
-            name: 'ESC HZ',
+            name: 'ESC Frequency',
             id: 'escHz',
-            desc: 'The frequency to run your ESC at (most are 50).',
+            desc: 'The frequency to run your ESC at (most are 50) in Hz.',
         },
         {
             name: 'API Enabled',
             id: 'apiEnabled',
-            desc: 'Whether or not to enable the API.',
+            desc: 'Whether or not to enable the API. Be aware that disabling this will prevent the use of the config editor.',
             enumMap: {
                 0: 'Disabled',
                 1: 'Enabled',
             },
         },
         {
-            name: 'Wi-Fly Enabled',
-            id: 'wiflyStatus',
+            name: 'Wi-Fi Enabled',
+            id: 'wifiEnabled',
             desc: 'Whether or not Wi-Fly is enabled. If you would like the network to be password-protected, select that option and configure the password in the `Wi-Fly` section.',
             enumMap: {
                 0: 'Disabled',
@@ -139,43 +104,24 @@ const config: Config = {
 
     Control: [
         {
-            name: 'Control Sensitivity',
-            id: 'controlSensitivity',
-            desc: 'Values from the receiver are multiplied by this number in normal mode. Smaller values mean handling will be more sluggish like a larger plane, and larger values mean handling will be more agile like a typical RC plane. This must be quite a small value--the setpoint is calculated many times per second!',
+            name: 'Maximum Roll Rate',
+            id: 'maxRollRate',
+            desc: 'The maximum rate of roll that the system will allow, in degrees per second.',
+        },
+        {
+            name: 'Maximum Pitch Rate',
+            id: 'maxPitchRate',
+            desc: 'The maximum rate of pitch that the system will allow, in degrees per second.',
         },
         {
             name: 'Rudder Sensitivity',
             id: 'rudderSensitivity',
-            desc: 'Decides how much the aileron input is scaled up/down to become the rudder input during turns, does not apply during direct mode.',
+            desc: '',
         },
         {
             name: 'Control Deadband',
             id: 'controlDeadband',
             desc: 'If the degree reading from any of the inputs is below this value, the inputs will be disregarded, does not apply during direct mode.',
-        },
-        {
-            name: 'Throttle Detents Calibrated',
-            id: 'throttleDetentsCalibrated',
-            desc: 'Whether or not the throttle detents have been calibrated. The system will set this automatically if detent calibration has been completed, but if you prefer to manually set the detents, then do so and set this to Calibrated.',
-            enumMap: {
-                0: 'Not Calibrated',
-                1: 'Calibrated',
-            },
-        },
-        {
-            name: 'Throttle IDLE Detent',
-            id: 'throttleDetentIdle',
-            desc: 'Most ESCs have a cutout; the motor does not start spinning exactly after 0%, so set the actual idle (0-100%) here.',
-        },
-        {
-            name: 'Throttle MCT Detent',
-            id: 'throttleDetentMCT',
-            desc: 'Maximum throttle (0-100%) that is allowed for an extended period of time.',
-        },
-        {
-            name: 'Throttle MAX Detent',
-            id: 'throttleDetentMax',
-            desc: 'Maximum throttle (0-100%) that is allowed for a short duration, set in the `Throttle MAX Time`.',
         },
         {
             name: 'Throttle MAX Time',
@@ -268,17 +214,17 @@ const config: Config = {
         {
             name: 'Aileron Servo',
             id: 'servoAil',
-            desc: 'Pin that the PWM (signal) wire on the AILERON servo is connected to.',
+            desc: 'Pin that the PWM (signal) wire on the AILERON/ELEVON LEFT servo is connected to, depending on the Control Mode.',
         },
         {
             name: 'Elevator Input',
-            id: 'inputElev',
+            id: 'inputEle',
             desc: 'Pin that the PWM (signal) wire from the receiver ELEVATOR channel is connected to.',
         },
         {
             name: 'Elevator Servo',
-            id: 'servoElev',
-            desc: 'Pin that the PWM (signal) wire on the ELEVATOR servo is connected to.',
+            id: 'servoEle',
+            desc: 'Pin that the PWM (signal) wire on the ELEVATOR/ELEVON RIGHT servo is connected to, depending on the Control Mode.',
         },
         {
             name: 'Rudder Input',
@@ -306,19 +252,9 @@ const config: Config = {
             desc: 'Pin that the PWM (signal) wire from the receiver SWITCH channel is connected to.',
         },
         {
-            name: 'Drop Servo',
-            id: 'servoDrop',
-            desc: 'Pin that the PWM (signal) wire on the DROP servo is connected to.',
-        },
-        {
-            name: 'Elevon Left Servo',
-            id: 'servoElevonL',
-            desc: 'Pin that the PWM (signal) wire on the ELEVON LEFT servo is connected to.',
-        },
-        {
-            name: 'Elevon Right Servo',
-            id: 'servoElevonR',
-            desc: 'Pin that the PWM (signal) wire on the ELEVON RIGHT servo is connected to.',
+            name: 'Bay Servo',
+            id: 'servoBay',
+            desc: 'Pin that the PWM (signal) wire on the BAY servo is connected to.',
         },
         {
             name: 'AAHRS SDA Pin',
@@ -343,7 +279,7 @@ const config: Config = {
         {
             name: 'Reverse Roll',
             id: 'reverseRoll',
-            desc: 'Reverses the roll direction.',
+            desc: 'Reverses the direction of the roll servo.',
             enumMap: {
                 0: 'Normal',
                 1: 'Reversed',
@@ -352,7 +288,7 @@ const config: Config = {
         {
             name: 'Reverse Pitch',
             id: 'reversePitch',
-            desc: 'Reverses the pitch direction.',
+            desc: 'Reverses the direction of the pitch servo.',
             enumMap: {
                 0: 'Normal',
                 1: 'Reversed',
@@ -361,7 +297,7 @@ const config: Config = {
         {
             name: 'Reverse Yaw',
             id: 'reverseYaw',
-            desc: 'Reverses the yaw direction.',
+            desc: 'Reverses the direction of the yaw servo.',
             enumMap: {
                 0: 'Normal',
                 1: 'Reversed',
@@ -375,8 +311,7 @@ const config: Config = {
             id: 'imuModel',
             desc: "The model of the IMU that is being used. Please let us know if there's an IMU you would like supported!",
             enumMap: {
-                1: 'BNO055',
-                2: 'ICM20948',
+                1: 'ICM20948',
             },
         },
         {
@@ -387,6 +322,11 @@ const config: Config = {
                 0: 'Barometer Disabled',
                 1: 'DPS310',
             },
+        },
+        {
+            name: 'AAHRS Bus Frequency',
+            id: 'aahrsBusFreq',
+            desc: 'The frequency to be used on the AAHRS I2C bus, in KHz. The default is 400 KHz which should work for most devices, but you can try lowering it if you are experiencing issues.',
         },
         {
             name: 'GPS Command Type',
@@ -404,7 +344,7 @@ const config: Config = {
         },
     ],
 
-    WiFly: [
+    WiFi: [
         {
             name: 'Network Name',
             id: 'ssid',
@@ -419,18 +359,17 @@ const config: Config = {
 
     System: [
         {
-            name: 'Debug Enabled',
-            id: 'debug',
-            desc: 'Whether the current firmware build is a debug build.',
+            name: 'Use Display',
+            id: 'useDisplay',
+            desc: 'Whether or not to use the display, if supported.',
             enumMap: {
-                0: 'Release',
-                1: 'Debug',
+                0: 'Disabled',
+                1: 'Enabled',
             },
-            readOnly: true,
         },
         {
-            name: 'Debug: FBW',
-            id: 'debug_fbw',
+            name: 'Debug',
+            id: 'printFBW',
             desc: 'Enables miscellaneous logs, warnings, and error statements.',
             enumMap: {
                 0: 'Disabled',
@@ -439,7 +378,7 @@ const config: Config = {
         },
         {
             name: 'Debug: AAHRS',
-            id: 'debug_aahrs',
+            id: 'printAAHRS',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the AAHRS system.',
             enumMap: {
                 0: 'Disabled',
@@ -447,8 +386,17 @@ const config: Config = {
             },
         },
         {
+            name: 'Debug: Aircraft',
+            id: 'printAircraft',
+            desc: "Enables more specific logs, warnings, and errors pertaining to the aicraft's flight.",
+            enumMap: {
+                0: 'Disabled',
+                1: 'Enabled',
+            },
+        },
+        {
             name: 'Debug: GPS',
-            id: 'debug_gps',
+            id: 'printGPS',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the GPS.',
             enumMap: {
                 0: 'Disabled',
@@ -456,138 +404,13 @@ const config: Config = {
             },
         },
         {
-            name: 'Debug: Wi-Fly',
-            id: 'debug_wifly',
-            desc: 'Enables more specific logs, warnings, and errors pertaining to Wi-Fly.',
-            enumMap: {
-                0: 'Disabled',
-                1: 'Enabled',
-            },
-        },
-        {
             name: 'Debug: Network',
-            id: 'debug_network',
+            id: 'printNetwork',
             desc: 'Enables more specific logs, warnings, and errors pertaining to the network stack.',
             enumMap: {
                 0: 'Disabled',
                 1: 'Enabled',
             },
-        },
-        {
-            name: 'Debug: Network Dump',
-            id: 'dump_network',
-            desc: 'Dumps the contents of Wi-Fly network communication.',
-            enumMap: {
-                0: 'Disabled',
-                1: 'Enabled',
-            },
-        },
-        {
-            name: 'Watchdog Timeout',
-            id: 'watchdogTimeout',
-            desc: 'The maximum amount of time (in ms) that the system can run the main program loop without rebooting.',
-        },
-    ],
-
-    PID: [
-        {
-            name: 'PID Tune Status',
-            id: 'tuneStatus',
-            desc: 'Whether PID tuning has been completed or not. The system will set this automatically if autotuning has been completed, but if you prefer to manually set parameters, then do so and set this to Tuned.',
-            enumMap: {
-                0: 'Not Tuned',
-                1: 'Tuned',
-            },
-        },
-        {
-            name: 'Roll kP',
-            id: 'roll_kp',
-            desc: "kP (proportional) term of the roll axis PID controller. This determines the immediate responsiveness of the aircraft and influences the magnitude of pico-fbw's corrective action.",
-        },
-        {
-            name: 'Roll ki',
-            id: 'roll_ki',
-            desc: 'ki (integral) term of the roll axis PID controller. This determines the long-term responsiveness of the aircraft, and can increase the corrective action over time if not enough change is seen.',
-        },
-        {
-            name: 'Roll kD',
-            id: 'roll_kd',
-            desc: 'kD (derivative) term of the roll axis PID controller. This provides dampening to the aircraft by anticipating future behavior to minimize overshoot and oscillation.',
-        },
-        {
-            name: 'Roll tau',
-            id: 'roll_tau',
-            desc: "tau (derivative low-pass filter time) constant of the roll axis PID controller. This influences the responsiveness of the derivative term in the controller's output calculation.",
-        },
-        {
-            name: 'Roll Integrator Minimum',
-            id: 'roll_integMin',
-            desc: 'Minimum allowable value for the integral term in the roll axis PID controller. This prevents excessive accumulation and mitigates wind-up issues, especially when the aircraft is operating at its output limits.',
-        },
-        {
-            name: 'Roll Integrator Maximum',
-            id: 'roll_integMax',
-            desc: 'Maximum allowable value for the integral term in the roll axis PID controller. This prevents excessive accumulation and mitigates wind-up issues, especially when the aircraft is operating at its output limits.',
-        },
-        {
-            name: 'Pitch kP',
-            id: 'pitch_kp',
-            desc: 'kP (proportional) term of the pitch axis PID controller.',
-        },
-        {
-            name: 'Pitch ki',
-            id: 'pitch_ki',
-            desc: 'ki (integral) term of the pitch axis PID controller.',
-        },
-        {
-            name: 'Pitch kD',
-            id: 'pitch_kd',
-            desc: 'kD (derivative) term of the pitch axis PID controller.',
-        },
-        {
-            name: 'Pitch Tau',
-            id: 'pitch_tau',
-            desc: 'tau (derivative low-pass filter time) constant of the pitch axis PID controller.',
-        },
-        {
-            name: 'Pitch Integrator Minimum',
-            id: 'pitch_integMin',
-            desc: 'Minimum allowable value for the integral term in the pitch axis PID controller.',
-        },
-        {
-            name: 'Pitch Integrator Maximum',
-            id: 'pitch_integMax',
-            desc: 'Maximum allowable value for the integral term in the pitch axis PID controller.',
-        },
-        {
-            name: 'Yaw kP',
-            id: 'yaw_kp',
-            desc: 'kP (proportional) term of the yaw axis PID controller.',
-        },
-        {
-            name: 'Yaw ki',
-            id: 'yaw_ki',
-            desc: 'ki (integral) term of the yaw axis PID controller.',
-        },
-        {
-            name: 'Yaw kD',
-            id: 'yaw_kd',
-            desc: 'kD (derivative) term of the yaw axis PID controller.',
-        },
-        {
-            name: 'Yaw Tau',
-            id: 'yaw_tau',
-            desc: 'tau (derivative low-pass filter time) constant of the yaw axis PID controller.',
-        },
-        {
-            name: 'Yaw Integrator Minimum',
-            id: 'yaw_integMin',
-            desc: 'Minimum allowable value for the integral term in the yaw axis PID controller.',
-        },
-        {
-            name: 'Yaw Integrator Maximum',
-            id: 'yaw_integMax',
-            desc: 'Maximum allowable value for the integral term in the yaw axis PID controller.',
         },
     ],
 };
@@ -624,7 +447,7 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
         }
     };
 
-    const handleSetConfig = async () => {
+    const handleSaveConfig = async () => {
         try {
             await serial.sendCommand('SET_CONFIG', 400);
             if (JSON.stringify(JSON.parse(await serial.sendCommand('GET_CONFIG'))) !== JSON.stringify(data)) {
@@ -667,25 +490,38 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
             return updatedData;
         });
 
-        if (write) {
-            try {
-                const keyId = config[sectionName as keyof typeof config][keyIndex].id;
-                if (autosave) {
-                    await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet} -S`, 200);
-                } else {
-                    await serial.sendCommand(`SET_CONFIG ${sectionName} ${keyId} ${toSet} -S`, 50);
-                    setUnsavedChanges(true);
-                }
-                const response = await serial.sendCommand(`GET_CONFIG ${sectionName} ${keyId}`, 50);
-                const newc = JSON.parse(response)?.key;
-                if ((!newc || newc !== toSet) && toSetNum !== 0) {
-                    console.warn(`Value read back was ${newc}, should have been ${toSet}`);
-                    throw new Error('Failed to verify config change, please try again');
-                }
-            } catch (error) {
-                if (error instanceof Error) {
-                    setSerialStatus(`Failed to set new config value: ${error.message}`);
-                }
+        if (!write) return;
+
+        try {
+            const key = config[sectionName as keyof typeof config][keyIndex].id;
+            const command = JSON.stringify({
+                changes: [
+                    {
+                        section: sectionName,
+                        key: key,
+                        value: String(toSet),
+                    },
+                ],
+                save: autosave,
+            });
+
+            await serial.sendCommand(`SET_CONFIG ${command}`, autosave ? 200 : 50);
+
+            if (!autosave) {
+                setUnsavedChanges(true);
+            }
+
+            const getConfigCommand = JSON.stringify({ section: sectionName, key: key });
+            const response = await serial.sendCommand(`GET_CONFIG ${getConfigCommand}`, 50);
+            const newc = JSON.parse(response)?.key;
+
+            if ((!newc || newc !== toSet) && toSetNum !== 0) {
+                console.warn(`Value read back was ${newc}, should have been ${toSet}`);
+                throw new Error('Failed to verify config change, please try again');
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                setSerialStatus(`Failed to set new config value: ${error.message}`);
             }
         }
     };
@@ -706,13 +542,13 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                         onClick={() => toggleSection(sectionIndex)}
                     >
                         <span className="text-base font-semibold leading-7">
-                            {section.name === 'WiFly' ? 'Wi-Fly' : section.name}
+                            {section.name === 'WiFi' ? 'Wi-Fi' : section.name}
                         </span>
                         <span className="ml-6 flex h-7 items-center">
                             {sectionVisibility[sectionIndex] ? (
-                                <MinusSmallIcon className="h-6 w-6" aria-hidden="true" />
+                                <MinusIcon className="h-6 w-6" aria-hidden="true" />
                             ) : (
-                                <PlusSmallIcon className="h-6 w-6" aria-hidden="true" />
+                                <PlusIcon className="h-6 w-6" aria-hidden="true" />
                             )}
                         </span>
                     </div>
@@ -804,7 +640,7 @@ function ConfigViewer({ serial, setSerialStatus }: DisplayConfigDataProps) {
                 <div>
                     <button
                         onClick={() => {
-                            handleSetConfig();
+                            handleSaveConfig();
                         }}
                         className="mt-6 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-md hover:shadow-lg"
                     >

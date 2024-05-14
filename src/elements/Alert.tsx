@@ -1,14 +1,11 @@
 import React from 'react';
 import { ExclamationTriangleIcon, InformationCircleIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import classNames from '../helpers/classNames';
 
 interface AlertProps {
     type: 'warning' | 'danger' | 'info';
     className?: string;
     children: React.ReactNode;
-}
-
-function classNames(...classes: string[]) {
-    return classes.filter(Boolean).join(' ');
 }
 
 function getColors(type: AlertProps['type']) {

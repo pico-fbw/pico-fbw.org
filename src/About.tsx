@@ -31,28 +31,21 @@ const members = [
 ];
 
 const libraries = [
-    { name: 'BjarneBitscrambler', href: 'https://github.com/BjarneBitscrambler/OrientationSensorFusion-ESP' },
-    { name: 'Blender', href: 'https://www.blender.org/' },
-    { name: 'Bosch Sensortech', href: 'https://github.com/boschsensortec/BNO055_driver' },
     { name: 'drbitboy', href: 'https://github.com/drbitboy/PID' },
     { name: 'GitJer', href: 'https://github.com/GitJer/Some_RPI-Pico_stuff/tree/main/PwmIn/PwmIn_4pins' },
     { name: 'h2non', href: 'https://github.com/h2non/semver.c' },
-    { name: 'KiCad', href: 'https://www.kicad.org/' },
+    { name: 'kgabis', href: 'https://github.com/kgabis/parson' },
     { name: 'kosma', href: 'https://github.com/kosma/minmea' },
     { name: 'Leaflet', href: 'https://leafletjs.com/' },
+    { name: 'littlefs', href: 'https://github.com/littlefs-project/littlefs' },
     { name: 'markushi', href: 'https://github.com/markushi/pico-servo' },
-    { name: 'NXP', href: 'https://www.nxp.com/design/sensor-developer-resources/nxp-sensor-fusion:XTRSICSNSTLBOXX' },
+    { name: 'Mongoose OS', href: 'https://mongoose-os.com/' },
     { name: 'Raspberry Pi', href: 'https://github.com/raspberrypi/pico-examples' },
-    { name: 'Raspberry Pi Foundation', href: 'https://www.raspberrypi.com/documentation/pico-sdk/' },
-    { name: 'React', href: 'https://react.dev/' },
-    { name: 'Tailwind Labs', href: 'https://tailwindcss.com/' },
-    { name: 'The MicroPython Project', href: 'https://micropython.org/' },
-    { name: 'Visual Studio Code', href: 'https://code.visualstudio.com/' },
 ];
 
 export default function About() {
     return (
-        <PageContentBlock hideSidebar title="pico-fbw | About">
+        <PageContentBlock title="pico-fbw | About">
             <Navigation />
             <div className="relative isolate overflow-hidden bg-gray-900 py-24 sm:py-32">
                 <video
@@ -62,7 +55,7 @@ export default function About() {
                     playsInline
                     className="absolute inset-0 -z-10 h-full w-full object-cover object-right md:object-center hidden sm:block opacity-10"
                 >
-                    <source src="../prod.mp4" type="video/mp4" />
+                    <source src="../assets/prod.mp4" type="video/mp4" />
                     Sorry, your browser does not support video.
                 </video>
                 <div className="sm:hidden">
@@ -112,15 +105,12 @@ export default function About() {
                             simplicity, accessibility, and reliability.
                             <br /> <br />
                             Both easy to use and affordable, pico-fbw breaks previous barriers to entry, and makes it
-                            simple for both beginners and seasoned flyers to enjoy assisted and autonomous flights. Its
-                            development involved over 10,000 lines of code, numerous prototypes, and countless hours of
-                            testing.
+                            simple for both beginners and seasoned flyers to enjoy assisted and autonomous flights.
                             <br /> <br />
                             We&apos;re excited to share pico-fbw with you, confident that its straightforward yet
                             powerful features will enhance your flying experience. As we continue to evolve and improve,
                             we invite you to join us in the skies. Happy flying!
                             <br />
-                            <span className="italic">~the pico-fbw team</span>
                         </h2>
                         <div className="mx-auto mt-16 max-w-2xl lg:mx-0 lg:max-w-none">
                             <h2 className="text-2xl font-bold leading-7 text-white mb-6">Meet the Team</h2>
@@ -158,25 +148,34 @@ export default function About() {
                                 ))}
                             </ul>
                             <p className="mt-10 text-md leading-8 text-gray-300 mb-6">
-                                The source code for{' '}
+                                Both&nbsp;
                                 <a
                                     href="https://github.com/pico-fbw/pico-fbw"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="hover:underline"
+                                    className="text-gray-300/80 hover:underline"
                                 >
                                     pico-fbw
                                 </a>
-                                , along with{' '}
+                                &nbsp;and&nbsp;
                                 <a
                                     href="https://github.com/pico-fbw/pico-fbw.org"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="hover:underline"
+                                    className="text-gray-300/80 hover:underline"
                                 >
                                     this website
                                 </a>
-                                , is accessible on GitHub.
+                                &nbsp;have their source code accessible&nbsp;
+                                <a
+                                    href="https://github.com/pico-fbw/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-300/80 hover:underline"
+                                >
+                                    on GitHub
+                                </a>
+                                .
                             </p>
                         </div>
                     </div>

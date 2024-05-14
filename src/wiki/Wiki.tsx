@@ -13,7 +13,7 @@ export default function Wiki() {
     }, []);
 
     return (
-        <PageContentBlock hideSidebar title="pico-fbw | Wiki">
+        <PageContentBlock title="pico-fbw | Wiki">
             <div className="flex flex-col items-center justify-center h-screen">
                 <h2 className="text-4xl font-bold mb-4 text-gray-300">Redirecting you to the wiki...</h2>
                 <p>

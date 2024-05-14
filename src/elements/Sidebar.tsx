@@ -1,22 +1,108 @@
-import { Fragment, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { HomeIcon, DocumentTextIcon, GlobeAmericasIcon, Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { NavLink } from 'react-router-dom';
-import { Bars3Icon } from '@heroicons/react/20/solid';
+import React, { Fragment, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Dialog, Disclosure, Transition } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import classNames from '../helpers/classNames';
 
-const navigation = [
-    { name: 'Home', to: '/', icon: HomeIcon, end: true },
-    { name: 'Planner', to: '/tools/planner', icon: GlobeAmericasIcon, end: true },
-    { name: 'Settings', to: '/tools/settings', icon: Cog6ToothIcon, end: false },
-    { name: 'Config Editor', to: '/tools/config', icon: DocumentTextIcon, end: true },
-];
-
-function classNames(...classes: string[]) {
-    return classes.filter(Boolean).join(' ');
+export interface SidebarNavigation {
+    name: string;
+    to: string;
+    icon?: React.ForwardRefExoticComponent<
+        Omit<React.SVGProps<SVGSVGElement>, 'ref'> & {
+            title?: string | undefined;
+            titleId?: string | undefined;
+        } & React.RefAttributes<SVGSVGElement>
+    >;
+    end: boolean;
+    children?: SidebarNavigation[];
 }
 
-export default function Sidebar() {
+export interface SidebarProps {
+    navigation: SidebarNavigation[];
+}
+
+interface SidebarEntryProps {
+    item: SidebarNavigation;
+    onClick?: () => void;
+}
+
+const SidebarEntry: React.FC<SidebarEntryProps> = ({ item, onClick }) => {
+    return (
+        <>
+            {!item.children ? (
+                <NavLink
+                    end={item.end}
+                    to={item.to}
+                    onClick={onClick}
+                    className={({ isActive }) =>
+                        classNames(
+                            isActive ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
+                        )
+                    }
+                >
+                    {item.icon && <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />}
+                    {item.name}
+                </NavLink>
+            ) : (
+                <Disclosure as="div">
+                    {({ open }) => (
+                        <>
+                            <Disclosure.Button
+                                className={({ open }) =>
+                                    classNames(
+                                        open || useLocation().pathname.startsWith(item.to)
+                                            ? 'bg-gray-800 text-white'
+                                            : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                                        'flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold',
+                                    )
+                                }
+                            >
+                                {item.icon && <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />}
+                                {item.name}
+                                <ChevronRightIcon
+                                    className={classNames(
+                                        open ? 'rotate-90 text-white' : 'text-gray-400',
+                                        'ml-auto h-5 w-5 shrink-0',
+                                    )}
+                                    aria-hidden="true"
+                                />
+                            </Disclosure.Button>
+                            <Disclosure.Panel as="ul" className="mt-1 px-2">
+                                {item.children?.map(subItem => (
+                                    <li key={subItem.name}>
+                                        <NavLink
+                                            end={subItem.end}
+                                            to={subItem.to}
+                                            onClick={onClick}
+                                            className={({ isActive }) =>
+                                                classNames(
+                                                    isActive
+                                                        ? 'bg-gray-800 text-white'
+                                                        : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                                                    'block rounded-md py-2 pr-2 pl-9 text-sm leading-6',
+                                                )
+                                            }
+                                        >
+                                            {subItem.name}
+                                        </NavLink>
+                                    </li>
+                                ))}
+                            </Disclosure.Panel>
+                        </>
+                    )}
+                </Disclosure>
+            )}
+        </>
+    );
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ navigation }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const onClick = () => {
+        setSidebarOpen(false);
+    };
 
     return (
         <>
@@ -67,7 +153,6 @@ export default function Sidebar() {
                                             </button>
                                         </div>
                                     </Transition.Child>
-                                    {/* Sidebar component, swap this element with another sidebar if you like */}
                                     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 ring-1 ring-white/10">
                                         <div className="flex h-16 shrink-0 items-center">
                                             <svg
@@ -122,26 +207,11 @@ export default function Sidebar() {
                                                 <li>
                                                     <ul role="list" className="-mx-2 space-y-1">
                                                         {navigation.map(item => (
-                                                            <li key={item.name}>
-                                                                <NavLink
-                                                                    end={item.end}
-                                                                    to={item.to}
-                                                                    className={({ isActive }) =>
-                                                                        classNames(
-                                                                            isActive
-                                                                                ? 'bg-gray-800 text-white'
-                                                                                : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <item.icon
-                                                                        className="h-6 w-6 shrink-0"
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                    {item.name}
-                                                                </NavLink>
-                                                            </li>
+                                                            <SidebarEntry
+                                                                item={item}
+                                                                key={item.name}
+                                                                onClick={onClick}
+                                                            />
                                                         ))}
                                                     </ul>
                                                 </li>
@@ -156,9 +226,8 @@ export default function Sidebar() {
 
                 {/* Static sidebar for desktop */}
                 <div className="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
-                    {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 ring-1 ring-white/5">
-                        <NavLink to={'/'} className="flex h-18 shrink-0 items-center">
+                        <NavLink to={'/'} className="flex h-[4.5rem] shrink-0 items-center">
                             <svg viewBox="0 0 24 24" className="h-10 w-auto -m-2" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     className="fill-blue-600"
@@ -208,21 +277,7 @@ export default function Sidebar() {
                                     <ul role="list" className="-mx-2 space-y-1">
                                         {navigation.map(item => (
                                             <li key={item.name}>
-                                                <NavLink
-                                                    end={item.end}
-                                                    to={item.to}
-                                                    className={({ isActive }) =>
-                                                        classNames(
-                                                            isActive
-                                                                ? 'bg-gray-800 text-white'
-                                                                : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                                                        )
-                                                    }
-                                                >
-                                                    <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                                                    {item.name}
-                                                </NavLink>
+                                                <SidebarEntry item={item} key={item.name} />
                                             </li>
                                         ))}
                                     </ul>
@@ -290,4 +345,6 @@ export default function Sidebar() {
             </div>
         </>
     );
-}
+};
+
+export default Sidebar;

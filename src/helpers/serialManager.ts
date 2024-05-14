@@ -19,10 +19,9 @@ export default class SerialManager {
         });
     }
 
-    private async request(vendorId = 0x2e8a): Promise<SerialPort> {
-        const filters = [{ usbVendorId: vendorId }];
+    private async request(): Promise<SerialPort> {
         try {
-            const port = await navigator.serial.requestPort({ filters });
+            const port = await navigator.serial.requestPort();
             return port;
         } catch (error) {
             if (error instanceof Error) {
@@ -39,8 +38,8 @@ export default class SerialManager {
         }
     }
 
-    async open(vendorId = 0x2e8a, baudRate = 115200, dataBits = 8, stopBits = 1, parity = false): Promise<void> {
-        const port = await this.request(vendorId);
+    async open(baudRate = 115200, dataBits = 8, stopBits = 1, parity = false): Promise<void> {
+        const port = await this.request();
         const [params] = [
             { baudRate: baudRate },
             { dataBits: dataBits },
@@ -49,6 +48,11 @@ export default class SerialManager {
         ];
         this.port = port;
         await port.open(params);
+        // Many esp32 devboards have the DTR and RTS pins connected to the EN and IO0 pins,
+        // so the chip will reset when the port is opened.
+        // Webserial doesn't provide a way to control these on init (only later), so the current solution
+        // is just to be very lenient with how many ping attempts we make.
+        // Not too much of an issue anyway considering the esp32 has its own wifi based config editor, but still notable.
     }
 
     async close(): Promise<void> {
@@ -132,7 +136,7 @@ export default class SerialManager {
         }
     }
 
-    async ping(maxRetries = 5, retryDelayMs = 500): Promise<boolean> {
+    async ping(maxRetries = 50, retryDelayMs = 150): Promise<boolean> {
         try {
             for (let retry = 0; retry < maxRetries; retry++) {
                 const response = await this.sendCommand('PING', 150);
