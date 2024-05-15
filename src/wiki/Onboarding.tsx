@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Transition } from '@headlessui/react';
+import { forwardRef, useEffect, useState } from 'react';
+import { TransitionChild, Transition } from '@headlessui/react';
 import Navigation from '../elements/Navigation';
 import PageContentBlock from '../elements/PageContentBlock';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
@@ -32,26 +32,31 @@ interface OptionCardProps {
     external?: boolean;
 }
 
-function OptionCard({ bgColor, imageSrc, title, description, link, external = false }: OptionCardProps) {
+const OptionCard = forwardRef<HTMLDivElement, OptionCardProps>((props, ref) => {
+    const { bgColor, imageSrc, title, link, external, description } = props;
+
     return (
-        <Clickable link={link} external={external}>
-            <div
-                className={`relative flex rounded-xl ${bgColor} text-white cursor-pointer p-5 duration-250 transition-all transform scale-100 hover:scale-105 hover:shadow-lg`}
-            >
-                <span className="flex flex-1">
-                    <span className="flex flex-col">
-                        <div className="h-60 mb-4">
-                            <img src={imageSrc} alt={title} className="h-full w-auto" />
-                        </div>
-                        <h2 className="text-lg font-semibold mb-2">{title}</h2>
-                        <span className="text-sm font-medium text-gray-200">{description}</span>
+        <div className={`option-card ${bgColor}`} ref={ref}>
+            <Clickable link={link} external={external ? external : false}>
+                <div
+                    className={`relative flex rounded-xl ${bgColor} text-white cursor-pointer p-5 duration-250 transition-all transform scale-100 hover:scale-105 hover:shadow-lg`}
+                >
+                    <span className="flex flex-1">
+                        <span className="flex flex-col">
+                            <div className="h-60 mb-4">
+                                <img src={imageSrc} alt={title} className="h-full w-auto" />
+                            </div>
+                            <h2 className="text-lg font-semibold mb-2">{title}</h2>
+                            <span className="text-sm font-medium text-gray-200">{description}</span>
+                        </span>
                     </span>
-                </span>
-                <ArrowRightIcon className={'h-5 w-5 text-white'} aria-hidden="true" />
-            </div>
-        </Clickable>
+                    <ArrowRightIcon className={'h-5 w-5 text-white'} aria-hidden="true" />
+                </div>
+            </Clickable>
+        </div>
     );
-}
+});
+OptionCard.displayName = 'OptionCard';
 
 export default function Onboarding() {
     const [showInfo, setShowInfo] = useState(false);
@@ -62,9 +67,9 @@ export default function Onboarding() {
     return (
         <PageContentBlock title={'pico-fbw | Get Started'}>
             <Navigation hideLinks />
-            <Transition.Root show={showInfo}>
+            <Transition show={showInfo}>
                 <div className="h-screen flex flex-col justify-center items-center mx-4 mt-16 sm:mt-0">
-                    <Transition.Child
+                    <TransitionChild
                         enter="transition-opacity duration-700"
                         enterFrom="opacity-0"
                         enterTo="opacity-100"
@@ -77,11 +82,11 @@ export default function Onboarding() {
                         </h1>
 
                         {/* Option card group */}
-                    </Transition.Child>
+                    </TransitionChild>
                     <div className="flex items-center">
                         <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4 md:grid-cols-2 md:gap-x-8">
                             {/* "Blue Buy" option card */}
-                            <Transition.Child
+                            <TransitionChild
                                 enter="transition-opacity duration-700"
                                 enterFrom="opacity-0"
                                 enterTo="opacity-100"
@@ -97,10 +102,10 @@ export default function Onboarding() {
                                     external
                                     description="Purchase our custom-built, ready-to-go boards"
                                 />
-                            </Transition.Child>
+                            </TransitionChild>
 
                             {/* "Gray DIY option card" */}
-                            <Transition.Child
+                            <TransitionChild
                                 enter="transition-opacity duration-700 delay-100"
                                 enterFrom="opacity-0"
                                 enterTo="opacity-100"
@@ -115,16 +120,16 @@ export default function Onboarding() {
                                     link={'/wiki/Home'}
                                     description="Build and install pico-fbw on your own Raspberry Pi Pico"
                                 />
-                            </Transition.Child>
+                            </TransitionChild>
                         </div>
                     </div>
                 </div>
-            </Transition.Root>
+            </Transition>
 
-            <Transition.Root show={false}>
+            <Transition show={false}>
                 <div className="h-screen flex items-center justify-center">
                     <div className="flex flex-col items-center justify-center">
-                        <Transition.Child
+                        <TransitionChild
                             enter="transition-opacity duration-700"
                             enterFrom="opacity-0"
                             enterTo="opacity-100"
@@ -135,10 +140,10 @@ export default function Onboarding() {
                             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-8">
                                 Redirecting...
                             </h1>
-                        </Transition.Child>
+                        </TransitionChild>
                     </div>
                 </div>
-            </Transition.Root>
+            </Transition>
         </PageContentBlock>
     );
 }
